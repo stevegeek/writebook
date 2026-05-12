@@ -47,6 +47,7 @@ The port pulls in (and in some cases extends or extracts) several Marten shards.
 | [`marten-text`](https://github.com/stevegeek/marten-text) | `ActionText` (polymorphic content row + `has_markdown` macro + render pipeline) |
 | [`marten-storages`](https://github.com/stevegeek/marten-storages) | `ActiveStorage` (polymorphic attachments + variants via `crystal-vips`) |
 | [`marten-delegated-type`](https://github.com/stevegeek/marten-delegated-type) | `ActiveRecord#delegated_type` |
+| [`marten-signed-id`](https://github.com/stevegeek/marten-signed-id) | `ActiveRecord#signed_id` / `find_signed` (HMAC-signed model IDs with optional expiry + purpose) |
 | [`marten-turbo`](https://github.com/stevegeek/marten-turbo) | `turbo-rails` (Frames + Streams + Broadcastable; fork at Turbo 8 parity) |
 | [`marten-cable`](https://github.com/stevegeek/marten-cable) | `ActionCable` (WS over `cable-cr/cable` + Marten session integration) |
 | [`marten-auth`](https://github.com/martenframework/marten-auth) | `has_secure_password` + session-cookie auth |
