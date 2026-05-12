@@ -1,6 +1,8 @@
 # Writebook — Marten / Crystal port
 
-A port of [Basecamp's Writebook](https://github.com/basecamp/writebook) (Once: Campfire-line content publisher) from **Rails** to **[Marten](https://martenframework.com) + Crystal**.
+> **What is this?** Just a little experiment. A way to feel what Crystal is like when used in a "Rubyist" way (ie by porting Ruby code), and how close a Marten app feels to Rails. Also to take notes on what it actually takes to port a real Rails app end-to-end. It is not a judgement on Ruby, Rails etc. Writebook was chosen as is small, self-contained, Rails app with enough surface area (Hotwire, Action Cable, polymorphism, FTS, image processing, auth) to make the exercise useful.
+
+A port of [Basecamp's Writebook](https://github.com/basecamp/writebook) from Ruby on Rails, to [Marten](https://martenframework.com) + Crystal.
 
 The user-facing surface aims at byte-level parity with the original: same CSS class vocabulary, same icons, same Hotwire-driven UX (Turbo Frames + Streams over HTTP and Action Cable, Stimulus on the client, drag-arrange, autosave, real-time "X is editing" indicators, FTS5 search, lock/web publication toggle, QR-code share, session-transfer links, custom-styles CSS editor, markdown export).
 

@@ -19,7 +19,10 @@ Marten.routes.draw do
   # Leaf edit-history. Scoped per-leaf: /leaves/<id>/edits[/<id>].
   path "/leaves", Books::EDIT_ROUTES, name: "edits"
 
-  if Marten.env.development?
+  # Assets are also served in test env so system specs can drive the real JS
+  # layer (Turbo / Stimulus / house-md). Handler specs hit handlers in-process
+  # and don't fetch assets, so the route is inert for them.
+  if Marten.env.development? || Marten.env.test?
     path "#{Marten.settings.assets.url}<path:path>", Marten::Handlers::Defaults::Development::ServeAsset, name: "asset"
     path "#{Marten.settings.media_files.url}<path:path>", Marten::Handlers::Defaults::Development::ServeMediaFile, name: "media_file"
   end

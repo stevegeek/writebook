@@ -30,3 +30,7 @@ dependencies:
 development_dependencies:
   ameba:
     github: crystal-ameba/ameba
+  lucky_flow:
+    github: luckyframework/lucky_flow
+  webdrivers:
+    github: crystal-loot/webdrivers.cr
