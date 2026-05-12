@@ -11,7 +11,7 @@ Here are a few more things you should know.
 
 For a more immersive, focused reading experience hit the expand button at the top of the screen to enter Full Screen mode (on supported devices). Full Screen hides most of the clutter and busyness of your browser and operating system so you can focus on reading. _Hint: you can use Full Screen while writing, too!_
 
-<img src="/u/fullscreen-IbQnfM.png" alt="Full Screen view" style="border: 1px solid var(--color-subtle)" />
+<img src="/assets/images/demo/fullscreen-IbQnfM.png" alt="Full Screen view" style="border: 1px solid var(--color-subtle)" />
 
 ## Moving between pages
 

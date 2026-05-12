@@ -1,13 +1,4 @@
-{# Mirrors Rails app/views/users/_transfer.html.erb. Caller injects:
-   - `transfer_url`   : signed URL to /session/transfer/<token>
-   - `transfer_other` : optional. truthy ONLY when an admin is viewing
-                        another user's transfer link (changes the label +
-                        translation key). When absent (today's only caller
-                        is /profile, always self), the self labels render.
-   - `transfer_token` : optional. raw token for the QR-code endpoint. When
-                        absent the QR dialog is hidden (Rails always shows
-                        it; Marten gates on the caller having generated it).
-#}
+{# Mirrors Rails app/views/users/_transfer.html.erb. Caller injects: transfer_url (signed URL), optional transfer_other (truthy when admin views another user — flips labels), optional transfer_token (raw token for QR dialog; absent hides it). #}
 <div class="flex flex-column align-center gap txt-medium--responsive">
   <label class="flex flex-column gap full-width">
     <div class="flex align-center gap">

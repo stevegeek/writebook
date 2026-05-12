@@ -3,10 +3,7 @@
 {% block title %}Sign in as {{ user.name }}{% endblock %}
 
 {% block content %}
-{# Mirrors Rails `<%= auto_submit_form_with method: :put %>`: an invisible
-   form that submits as soon as the page loads, redeeming the transfer
-   token. If JS is disabled or the user wants to confirm, a fallback
-   button is rendered inside <noscript>-style markup. #}
+{# Mirrors Rails `auto_submit_form_with method: :put` — submits on load to redeem the transfer token; button is the JS-disabled fallback. #}
 <form method="post" action="{{ redeem_url }}" data-controller="auto-submit"
       class="flex justify-center margin-block-double">
   {% csrf_input %}

@@ -11,7 +11,7 @@ Private books are available to anyone who is signed in to your Writebook and has
 ## Publishing to the web
 To make a book available to everyone on the internet, just flip the switch from locked to web. Your book will be instantly available at the URL displayed when the switch is on. There are tools below to display a QR code or copy the URL so you can share it in an email, text, or chat—or link to it on your home page.
 
- ![publishing.gif](/u/publishing-vP0uNP.gif)
+ ![publishing.gif](/assets/images/demo/publishing-vP0uNP.gif)
 
 ## Public URLs
 Your book's public URL consists of the domain you provided when you set up Writebook plus a _slug_ derived from the title of the book. For example, if your Writebook is at `books.37signals.com`, then the title _Getting Real_ will be published at `books.37signals.com/getting-real`. You can change this slug if you don't like the one Writebook provided.

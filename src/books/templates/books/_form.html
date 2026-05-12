@@ -75,11 +75,7 @@
     </div>
 
     <div class="flex flex-column gap full-width">
-      {% if schema.errors %}
-        <div class="txt-subtle margin-block-end">
-          {% for err in schema.errors %}<p>{{ err }}</p>{% endfor %}
-        </div>
-      {% endif %}
+      {% for err in schema.errors %}{% if loop.first? %}<div class="txt-subtle margin-block-end">{% endif %}<p>{{ err }}</p>{% if loop.last? %}</div>{% endif %}{% endfor %}
 
       <div class="flex align-center gap txt-medium">
         <h1 class="txt-xx-large margin-none full-width">

@@ -9,7 +9,7 @@ If you're already a Markdown expert, you can write your book with the same forma
 
 But if you're new to Markdown, Writebook's text editing toolbar has the most common formatting tools for anyone who's familiar with a word processor.
 
- ![markdown-toolbar.png](/u/markdown-toolbar-lnzfdA.png)
+ ![markdown-toolbar.png](/assets/images/demo/markdown-toolbar-lnzfdA.png)
 
 When you hit a formatting button, Writebook will wrap selected text in the corresponding Markdown formatting characters.
 

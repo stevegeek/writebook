@@ -20,10 +20,7 @@
 
   <div class="search__results flex flex-column margin-block-start">
     {% for result in results %}
-      {# show-link dispatch by concrete leafable type. Sections have no
-         public show route; anchor into the book TOC instead. Pictures
-         are never indexed (no searchable_content), so the picture branch
-         is defensive only. #}
+      {# Show-link dispatch by concrete leafable type. Pictures aren't indexed (defensive only). #}
       {% if result.leaf.picture %}
         <a href="{% url 'pictures:show' id: result.leaf.id %}" class="search__result txt-ink" data-turbo-frame="_top">
           <strong>{{ result.title_match|safe }}:</strong> {{ result.content_match|safe }}

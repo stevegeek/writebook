@@ -11,13 +11,13 @@ Here's what you need to know.
 
 The first step when working on your book is to flip the switch and enter _Editing mode_. That will reveal the page toolbar and save button. Edit mode stays on even as you move around to other pages in your book while working. You can turn it off when you're done working or toggle it anytime to preview your changes as readers will see them.
 
- ![edit-mode.gif](/u/edit-mode-ygeCcM.gif)
+ ![edit-mode.gif](/assets/images/demo/edit-mode-ygeCcM.gif)
 
 ## Autosave
 
 Writebook automatically saves as you write so you don't have to think about saving or worry about losing your work. The _Save_ button in the page toolbar continually comminicates where the are unsaved changes, when it's in the process of saving, and when all changes have been saved. You can hit the button if you want to, but it'll save for you even if you don't.
 
- ![autosave.gif](/u/autosave-Ssql4X.gif)
+ ![autosave.gif](/assets/images/demo/autosave-Ssql4X.gif)
 
 ## Full Screen
 

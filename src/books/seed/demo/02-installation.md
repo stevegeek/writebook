@@ -29,7 +29,7 @@ You personal install command will look something like this:
 
 Running this command will automatically install Docker on your server if you’re using Linux (which is what everything in the cloud usually runs), then download the latest Writebook application as a container that can run on top of Docker. In the process, it’ll ask for the domain name you’re using to host Writebook, so that we can configure an SSL certificate for you.
 
- ![Screenshot 2024-06-19 at 8.02.28 PM.png](/u/screenshot-2024-06-19-at-8-02-28-pm-PFWfLF.png)
+ ![Screenshot 2024-06-19 at 8.02.28 PM.png](/assets/images/demo/screenshot-2024-06-19-at-8-02-28-pm-PFWfLF.png)
 
 That’s it! Now you’re ready to setup the first user on the new installation. Go to the `https://YOUR-DOMAIN` and the process will begin. Then you’ll be ready to invite the rest of your team to the system.
 

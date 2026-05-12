@@ -1,1 +1,2 @@
 require "./migrations/**"
+require "./cli/**"
