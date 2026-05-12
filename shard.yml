@@ -8,6 +8,8 @@ dependencies:
     github: stevegeek/marten-delegated-type
   marten_markdown:
     github: stevegeek/marten-markdown
+  marten_storages:
+    github: stevegeek/marten-storages
   marten_turbo:
     path: ../marten-turbo
   marten_cable:

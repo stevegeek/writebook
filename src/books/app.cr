@@ -1,10 +1,10 @@
 require "marten_markdown"
+require "marten_storages"
 
 # Books app — the content domain. Owns Book, Leaf, Edit, Markdown,
 # Leafables (Page/Section/Picture), and Attachment (storage), plus the
 # concerns and helpers for those.
 require "./concerns/**"
-require "./storage_helpers"
 require "./models/**"
 require "./schemas/**"
 require "./handlers/**"

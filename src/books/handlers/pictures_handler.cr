@@ -1,7 +1,7 @@
 module Books
   # Pictures — image-bearing leaves of a Book. New picture flow:
   #   1. Create empty Leafables::Picture row (so it has a pk).
-  #   2. Attach the uploaded image via AttachmentHelpers.attach (saves
+  #   2. Attach the uploaded image via MartenStorages::Service.attach (saves
   #      an Attachment row + pre-computes the "large" variant via vips).
   #   3. Create a Leaf wrapping the picture, attached to the book, in a
   #      transaction.
@@ -28,7 +28,8 @@ module Books
       Marten::DB::Connection.default.transaction do
         pic = Leafables::Picture.create!(caption: caption.presence)
         if uploaded
-          AttachmentHelpers.attach(
+          MartenStorages::Service.attach(
+            model: Attachment,
             record: pic,
             name: "image",
             uploaded_file: uploaded,
@@ -134,7 +135,7 @@ module Books
         path: "/"
       )
 
-      attachment = AttachmentHelpers.find_one(record: picture, name: "image")
+      attachment = MartenStorages::Service.find_one(model: Attachment, record: picture, name: "image")
       edit_url = Marten.routes.reverse("pictures:edit", id: leaf.pk!)
       render("pictures/show.html", context: {
         leaf:          leaf,
@@ -190,7 +191,8 @@ module Books
       Marten::DB::Connection.default.transaction do
         target_picture.update!(caption: caption.presence)
         if uploaded
-          AttachmentHelpers.attach(
+          MartenStorages::Service.attach(
+            model: Attachment,
             record: target_picture,
             name: "image",
             uploaded_file: uploaded,
@@ -237,7 +239,7 @@ module Books
 
     private def current_attachment : Attachment?
       pic = picture
-      pic ? AttachmentHelpers.find_one(record: pic, name: "image") : nil
+      pic ? MartenStorages::Service.find_one(model: Attachment, record: pic, name: "image") : nil
     end
   end
 end

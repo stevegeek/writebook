@@ -2,7 +2,7 @@ module Books
   # Shared cover-upload logic for BooksNewHandler / BooksEditHandler.
   #
   # Called after the Book record is saved. Handles:
-  #   - `image` file param  → AttachmentHelpers.attach (creates/replaces cover)
+  #   - `image` file param  → MartenStorages::Service.attach (creates/replaces cover)
   #   - `remove_cover=true` → deletes the existing cover attachment row + file
   #
   # Does nothing if neither param is present.
@@ -10,7 +10,7 @@ module Books
     private def handle_cover_upload(book : Book) : Nil
       # remove_cover takes precedence over a new upload if both arrive together.
       if request.data["remove_cover"]?.try(&.to_s) == "true"
-        existing = AttachmentHelpers.find_one(record: book, name: "cover")
+        existing = MartenStorages::Service.find_one(model: Attachment, record: book, name: "cover")
         existing.delete if existing
         return
       end
@@ -19,10 +19,11 @@ module Books
       return if uploaded.nil?
 
       # Replace any existing cover before attaching the new one.
-      existing = AttachmentHelpers.find_one(record: book, name: "cover")
+      existing = MartenStorages::Service.find_one(model: Attachment, record: book, name: "cover")
       existing.delete if existing
 
-      AttachmentHelpers.attach(
+      MartenStorages::Service.attach(
+        model: Attachment,
         record: book,
         name: "cover",
         uploaded_file: uploaded,
@@ -94,7 +95,7 @@ module Books
       context[:leaves] = leaves
       context[:signed_in] = signed_in?
       context[:editable] = book.editable?(current_user)
-      context[:cover] = AttachmentHelpers.find_one(record: book, name: "cover")
+      context[:cover] = MartenStorages::Service.find_one(model: Attachment, record: book, name: "cover")
       # Used by books/publications/_publication.html for its own {% turbo_frame %}.
       context[:frame_id] = "book_publication_#{book.pk}"
     end
@@ -187,7 +188,7 @@ module Books
     private def inject_cover : Nil
       book = record
       return if book.nil?
-      context[:cover] = AttachmentHelpers.find_one(record: book, name: "cover")
+      context[:cover] = MartenStorages::Service.find_one(model: Attachment, record: book, name: "cover")
     end
 
     private def ensure_editable : Marten::HTTP::Response?

@@ -107,7 +107,8 @@ class Books::SeedManualCommand < Marten::CLI::Command
     ::File.open(cover_path, "rb") do |io|
       part = HTTP::FormData::Part.new(headers: part_headers, body: io)
       uploaded = Marten::HTTP::UploadedFile.new(part)
-      ::Books::AttachmentHelpers.attach(
+      ::MartenStorages::Service.attach(
+        model: ::Books::Attachment,
         record: book,
         name: "cover",
         uploaded_file: uploaded,
