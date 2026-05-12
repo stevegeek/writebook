@@ -13,7 +13,7 @@
       {% endif %}
       {# Lazy-loaded bookmark/resume turbo-frame — Rails renders only the frame #}
       {# (no fallback link); the frame's `src` populates it on the client. #}
-      <turbo-frame id="book_{{ book.id }}_bookmark" src="{% url 'books:bookmark' book_id: book.id %}" target="_top"></turbo-frame>
+      <turbo-frame id="{% dom_id book %}_bookmark" src="{% url 'books:bookmark' book_id: book.id %}" target="_top"></turbo-frame>
     </div>
     <h2 class="margin-none flex flex-column txt-normal txt-tight-lines txt-medium--responsive">
       <strong>{{ book.title }}</strong>

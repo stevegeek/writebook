@@ -1,6 +1,6 @@
 {# TOC leaf item in books/show. Rendered via {% for leaf in leaves %}{% include "leaves/_leaf.html" %}{% endfor %}. #}
 {# Mirrors Rails app/views/leaves/_leaf.html.erb. #}
-<li class="arrangement__item toc__leaf {% if leaf.page %}toc__leaf--page{% elsif leaf.section %}toc__leaf--section{% elsif leaf.picture %}toc__leaf--picture{% endif %}" id="leaf_{{ leaf.id }}" data-id="{{ leaf.id }}" data-arrangement-target="item">
+<li class="arrangement__item toc__leaf {% if leaf.page %}toc__leaf--page{% elsif leaf.section %}toc__leaf--section{% elsif leaf.picture %}toc__leaf--picture{% endif %}" id="{% dom_id leaf %}" data-id="{{ leaf.id }}" data-arrangement-target="item">
 
   <span class="btn btn--link arrangement__handle txt-small">
     <img src="{% asset 'images/handle.svg' %}" aria-hidden="true" width="24" height="24" alt="">

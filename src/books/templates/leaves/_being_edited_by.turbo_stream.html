@@ -6,7 +6,7 @@
 {# the inner block — Rails wraps via turbo_stream.append do).                  #}
 {#                                                                             #}
 {# Required broadcast locals: leaf, user.                                      #}
-<div id="user_{{ user.id }}_being_edited_by"
+<div id="{% dom_id user %}_being_edited_by"
      class="flex-inline align-center justify-center margin-block-end-double txt-medium gap being-edited-by"
      data-controller="autoremove"
      data-action="animationend->autoremove#remove"

@@ -3,8 +3,9 @@
 {# its own <turbo-frame> so the same template works both for the initial      #}
 {# render in books/show.html and for the turbo-stream replace on              #}
 {# POST /books/<id>/publication (the replace action swaps the entire          #}
-{# matching #book_publication_<id> element, so the new content must include   #}
-{# the frame wrapper too).                                                    #}
+{# matching #publication_books_book_<id> element, so the new content must     #}
+{# include the frame wrapper too). frame_id comes from marten-turbo's          #}
+{# dom_id(book, "publication") helper, computed on the handler side.           #}
 {% turbo_frame frame_id %}
 <div class="book-publication flex flex-column gap margin-block-start pad {% if book.published %}fill-selected{% else %}fill-shade{% endif %} border-radius">
   {% if editable %}

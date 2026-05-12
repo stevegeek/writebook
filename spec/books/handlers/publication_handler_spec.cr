@@ -22,7 +22,7 @@ describe "Books::BookPublicationHandler" do
       response = client.get(Marten.routes.reverse("books:publication", id: manual.pk!))
       response.status.should eq(200)
       # The publication partial renders a turbo-frame with the lock/publish switch.
-      response.content.should contain("book_publication_#{manual.pk}")
+      response.content.should contain("publication_books_book_#{manual.pk}")
     end
 
     it "redirects to sign-in for anonymous visitors" do
@@ -143,7 +143,7 @@ describe "Books::BookPublicationHandler" do
 
       response.status.should eq(200)
       response.content.should contain("turbo-stream")
-      response.content.should contain("book_publication_#{manual.pk}")
+      response.content.should contain("publication_books_book_#{manual.pk}")
       manual.reload
       manual.published.should be_true
     end

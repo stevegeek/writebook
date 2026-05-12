@@ -81,6 +81,7 @@ module Books
 
   class BooksShowHandler < Marten::Handlers::RecordDetail
     include ::Accounts::AuthenticationHelpers
+    include MartenTurbo::Identifiable
 
     model Book
     template_name "books/show.html"
@@ -108,7 +109,7 @@ module Books
       context[:editable] = book.editable?(current_user)
       context[:cover] = MartenStorages::Service.find_one(model: Attachment, record: book, name: "cover")
       # Used by books/publications/_publication.html for its own {% turbo_frame %}.
-      context[:frame_id] = "book_publication_#{book.pk}"
+      context[:frame_id] = dom_id(book, "publication")
     end
   end
 
@@ -219,6 +220,7 @@ module Books
   class BookPublicationHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
     include MartenTurbo::Handlers::Concerns::Streamable
+    include MartenTurbo::Identifiable
 
     @book : Book? = nil
 
@@ -229,7 +231,7 @@ module Books
     def get
       render(
         "books/publications/_publication.html",
-        context: {book: book, editable: true, frame_id: "book_publication_#{book.pk}"},
+        context: {book: book, editable: true, frame_id: dom_id(book, "publication")},
       )
     end
 
@@ -241,7 +243,7 @@ module Books
       book.save!
 
       if request.turbo?
-        frame_id = "book_publication_#{book.pk}"
+        frame_id = dom_id(book, "publication")
         turbo_frame_replace(
           frame_id,
           partial: "books/publications/_publication.html",

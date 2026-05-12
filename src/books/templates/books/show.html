@@ -95,7 +95,7 @@
     <span class="txt-large--responsive txt-normal">{{ book.author }}</span>
   </h1>
 
-  <div class="book__toolbar fill-white flex gap-half pad-block margin-block-end-half justify-center {% if editable %}position-sticky{% endif %}" data-controller="toc-view" data-toc-view-id-value="book_{{ book.id }}">
+  <div class="book__toolbar fill-white flex gap-half pad-block margin-block-end-half justify-center {% if editable %}position-sticky{% endif %}" data-controller="toc-view" data-toc-view-id-value="{% dom_id book %}">
     <label class="btn txt-medium disable-when-empty">
       <input type="radio" name="view" id="toc-list" value="list" data-toc-view-target="switch" data-toc-view-type-value="list" data-action="toc-view#saveViewPref">
       <img src="{% asset 'images/view-list.svg' %}" aria-hidden="true" width="24" height="24" alt="">

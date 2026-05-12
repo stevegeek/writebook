@@ -27,7 +27,7 @@
           action="{% url 'pages:edit' id: leaf.id %}"
           {% endif %}
           class="flex align-center max-width min-width"
-          id="leaf_{{ leaf.id }}_form">
+          id="{% dom_id leaf %}_form">
       {% csrf_input %}
       <input type="text" name="title" value="{{ leaf.title }}"
              class="input full-width" autofocus autocomplete="off"

@@ -11,7 +11,9 @@ export default class extends Controller {
 
   #markLastReadLeaf() {
     const [ leafId ] = getReadingProgress(this.bookIdValue)
-    const leafElement = leafId && this.element.querySelector(`#leaf_${leafId}`)
+    // ID matches `{% dom_id leaf %}` in _leaf.html — marten-turbo's namespaced
+    // convention is `<app>_<model>_<pk>` (e.g. `books_leaf_42`).
+    const leafElement = leafId && this.element.querySelector(`#books_leaf_${leafId}`)
 
     if (leafElement) {
       leafElement.classList.add(this.lastReadClass)

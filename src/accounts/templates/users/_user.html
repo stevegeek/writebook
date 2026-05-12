@@ -23,7 +23,7 @@
       <input type="checkbox"
              name="role"
              value="administrator"
-             id="user_{{ user.id }}_role"
+             id="{% dom_id user %}_role"
              data-action="form#submit"
              {% if user.role == "administrator" %}checked{% endif %}
              {% if user.id == current_user_id %}disabled{% else %}{% if current_user_admin %}{% else %}disabled{% endif %}{% endif %}>

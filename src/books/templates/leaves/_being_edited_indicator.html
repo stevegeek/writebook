@@ -12,4 +12,4 @@
 {# being_edited) tuple as a single string — we precompute that on the          #}
 {# handler side and expose it here as `being_edited_stream`.                   #}
 {% turbo_stream_from being_edited_stream %}
-<div id="leaf_{{ leaf.id }}_being_edited" class="being-edited-indicator"></div>
+<div id="{% dom_id leaf %}_being_edited" class="being-edited-indicator"></div>

@@ -1,4 +1,4 @@
-<turbo-frame id="book_{{ book.id }}_bookmark">
+<turbo-frame id="{% dom_id book %}_bookmark">
   {% if leaf %}
     {% if leaf.leafable_type == "Books::Leafables::Picture" %}
       <a href="{% url 'pictures:show' id: leaf.id %}" class="bookmark__link">
