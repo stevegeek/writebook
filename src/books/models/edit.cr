@@ -29,6 +29,14 @@ module Books
     scope :before   { |other| filter(created_at__lt: other.created_at!) }
     scope :after    { |other| filter(created_at__gt: other.created_at!) }
 
+    def revision? : Bool
+      event == "revision"
+    end
+
+    def trash? : Bool
+      event == "trash"
+    end
+
     # Mirrors Rails' Edit#previous / #next — the chronologically prior/next
     # edit for the same leaf. Used by the edits/show.html prev/next nav.
     def previous_edit : Edit?

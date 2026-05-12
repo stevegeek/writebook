@@ -35,6 +35,14 @@ module Books
     scope :active { filter(status: "active") }
     scope :trashed { filter(status: "trashed") }
 
+    def active? : Bool
+      status == "active"
+    end
+
+    def trashed? : Bool
+      status == "trashed"
+    end
+
     def self.with_leafables
       # Marten's `prefetch` doesn't work directly with polymorphic, so we
       # leave this as a no-op placeholder. Lookups happen lazily.

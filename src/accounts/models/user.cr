@@ -49,6 +49,16 @@ module Accounts
       Books::Book.filter(accesses__user_id: id)
     end
 
+    # Mirrors Rails User#current?, which compares against the fiber-local
+    # `Current.user`. Marten has no fiber-local equivalent — pass the
+    # session's current user in explicitly. AuthenticationHelpers#current?
+    # wraps this for handler callers; templates consume a pre-computed
+    # boolean from the context.
+    def current?(other : User?) : Bool
+      return false if other.nil?
+      pk == other.pk
+    end
+
     def deactivate
       Marten::DB::Connection.default.transaction do
         # Anonymise the email so the slot can be re-used and so the now-deactivated

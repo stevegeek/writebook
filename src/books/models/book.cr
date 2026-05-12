@@ -27,9 +27,14 @@ module Books
     scope :ordered { order(:title) }
 
     # Mirrors Rails' `enum :theme, %w[...], suffix: true` — generates one
-    # filter scope per theme: Book.black_theme, Book.blue_theme, etc.
+    # filter scope AND one predicate per theme: Book.black_theme, .blue_theme,
+    # …; book.black_theme?, .blue_theme?, ….
     {% for theme in %w[black blue green magenta orange violet white] %}
       scope :{{theme.id}}_theme { filter(theme: {{theme}}) }
+
+      def {{theme.id}}_theme? : Bool
+        theme == {{theme}}
+      end
     {% end %}
 
     # Aggregate Markdown for export — concatenates each leafable's `markable`

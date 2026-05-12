@@ -11,5 +11,11 @@ module Accounts
     def administrator?
       role == "administrator"
     end
+
+    # Mirrors Rails User::Role#can_administer? — a named alias of
+    # `administrator?` that reads better at the callsite.
+    def can_administer? : Bool
+      administrator?
+    end
   end
 end

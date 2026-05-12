@@ -28,6 +28,13 @@ module Accounts
       request.user!.as(User)
     end
 
+    # Mirrors Rails' `user.current?` — true if the given user is the
+    # signed-in user. Wraps User#current? so handlers don't have to repeat
+    # the `current_user` lookup at every callsite.
+    protected def current?(user : User?) : Bool
+      user.try(&.current?(current_user)) || false
+    end
+
     protected def require_authentication : Marten::HTTP::Response?
       return nil if signed_in?
       # Save the original URL so SessionsCreateHandler#post_authenticating_url
