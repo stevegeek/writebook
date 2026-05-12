@@ -9,12 +9,13 @@ module Accounts
   # guard in base.html drops the `<style>` tag.
   class CustomStylesEditHandler < Marten::Handlers::Schema
     include AuthenticationHelpers
+    include Authorization
 
     schema CustomStylesSchema
     template_name "custom_styles/edit.html"
 
     before_dispatch :require_authentication
-    before_dispatch :require_admin
+    before_dispatch :ensure_can_administer
     before_render :inject_account
 
     # Pre-fill the textarea on GET (and re-show prior input on invalid POST)

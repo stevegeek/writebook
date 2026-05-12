@@ -19,11 +19,6 @@ module Accounts
       super.filter(active: true).order(:name)
     end
 
-    private def require_admin : Marten::HTTP::Response?
-      return nil if current_user.try(&.administrator?)
-      redirect(Marten.routes.reverse("books:index"))
-    end
-
     private def inject_account : Nil
       account = Account.first!
       context[:account] = account
@@ -34,12 +29,13 @@ module Accounts
   # POST /users/<id>/update — admin-only role toggle.
   class UsersUpdateHandler < Marten::Handlers::Schema
     include AuthenticationHelpers
+    include Authorization
 
     schema UserRoleSchema
     template_name "users/index.html"
 
     before_dispatch :require_authentication
-    before_dispatch :require_admin
+    before_dispatch :ensure_can_administer
 
     def process_valid_schema
       me = current_user!
@@ -62,9 +58,10 @@ module Accounts
   # POST /users/<id>/delete — admin-only deactivate (sets active=false, scrambles email).
   class UsersDeleteHandler < Marten::Handler
     include AuthenticationHelpers
+    include Authorization
 
     before_dispatch :require_authentication
-    before_dispatch :require_admin
+    before_dispatch :ensure_can_administer
 
     def post
       me = current_user!
@@ -82,9 +79,10 @@ module Accounts
   # POST /account/join_codes — admin-only; regenerates the join code.
   class JoinCodesCreateHandler < Marten::Handler
     include AuthenticationHelpers
+    include Authorization
 
     before_dispatch :require_authentication
-    before_dispatch :require_admin
+    before_dispatch :ensure_can_administer
 
     def post
       Account.first!.reset_join_code!

@@ -45,12 +45,5 @@ module Accounts
       end
       redirect(Marten.routes.reverse("accounts:session_new"))
     end
-
-    # Returns 403 unless the current user is an administrator.
-    # Use as a `before_dispatch` callback on admin-only handlers.
-    protected def require_admin : Marten::HTTP::Response?
-      return nil if current_user.try(&.administrator?)
-      head(:forbidden)
-    end
   end
 end
