@@ -87,7 +87,18 @@ module Books
     record_context_name "book"
     lookup_param "id"
 
+    before_dispatch :ensure_accessable
     before_render :inject_extras
+
+    # Mirror Rails BooksController#show: 404 if the requested book is neither
+    # published nor accessible to the current user. Without this, any signed-in
+    # user could view any book by id.
+    private def ensure_accessable : Marten::HTTP::Response?
+      book = Book.get(pk: params["id"]?)
+      return head :not_found if book.nil?
+      return head :not_found unless book.published || book.accessable?(current_user)
+      nil
+    end
 
     private def inject_extras : Nil
       book = record

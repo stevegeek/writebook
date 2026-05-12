@@ -46,7 +46,7 @@ module Books
   # Renders a single revision of the leaf — the leafable content as it
   # was at the moment the edit was recorded — alongside the current
   # version. `id` may be the integer pk of an `Edit` row, or the special
-  # string `"latest"` (Rails parity).
+  # string `"latest"`.
   class EditsShowHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
 

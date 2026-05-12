@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Run the system (browser) spec suite. Spawns ./bin/server in a subprocess and
+# drives it via headless Chrome.
+#
+# Usage: script/spec_system               # all system specs
+#        script/spec_system spec/system/edit_page_spec.cr   # one file
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+export CRYSTAL_LIBRARY_PATH="${CRYSTAL_LIBRARY_PATH:+$CRYSTAL_LIBRARY_PATH:}$HOME/.asdf/installs/crystal/1.20.1/embedded/lib"
+
+# Ensure bin/server is up-to-date — system specs spawn it as a subprocess and
+# expect it to reflect current source.
+mkdir -p bin
+needs_build=false
+if [[ ! -x bin/server ]]; then
+  needs_build=true
+else
+  if [[ -n "$(find config src shard.lock -type f \( -name '*.cr' -o -name 'shard.lock' \) -newer bin/server -print -quit 2>/dev/null)" ]]; then
+    needs_build=true
+  fi
+fi
+
+if $needs_build; then
+  echo "==> Building bin/server..."
+  crystal build src/server.cr -o bin/server
+fi
+
+if [[ $# -eq 0 ]]; then
+  exec crystal spec spec/system/
+else
+  exec crystal spec "$@"
+fi
