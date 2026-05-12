@@ -6,6 +6,8 @@ version: 0.1.0
 dependencies:
   marten_delegated_type:
     github: stevegeek/marten-delegated-type
+  marten_markdown:
+    github: stevegeek/marten-markdown
   marten_turbo:
     path: ../marten-turbo
   marten_cable:

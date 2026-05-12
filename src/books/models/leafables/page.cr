@@ -12,7 +12,7 @@ module Books::Leafables
 
     template_attributes :id, :body, :html_preview, :word_count, :created_at, :updated_at
 
-    has_markdown :body
+    has_markdown :body, model: ::Books::Markdown
 
     def searchable_content : String?
       body.try(&.plain_text)
@@ -27,7 +27,7 @@ module Books::Leafables
     # of the markdown source through the regular renderer.
     def html_preview : String
       source = body.try(&.content) || ""
-      ::Books::MarkdownRenderer.render(source[0, 1024])
+      ::MartenMarkdown::Renderer.render(source[0, 1024])
     end
 
     def word_count : Int32
