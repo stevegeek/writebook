@@ -81,12 +81,12 @@ shards:
     path: ../marten-delegated-type
     version: 0.1.0
 
-  marten_markdown: # Overridden
-    path: ../marten-markdown
-    version: 0.1.0
-
   marten_storages: # Overridden
     path: ../marten-storages
+    version: 0.1.0
+
+  marten_text: # Overridden
+    path: ../marten-text
     version: 0.1.0
 
   marten_turbo:

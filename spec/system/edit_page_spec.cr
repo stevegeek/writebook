@@ -52,7 +52,7 @@ describe "Edit page (system)" do
       page.try(&.body.try(&.content)) == new_body
     end
 
-    # Marten port renders markdown server-side via MartenMarkdown::Renderer
+    # Marten port renders markdown server-side via MartenText::Renderer
     # into a `.page--page` div (Rails' equivalent on the show page is the
     # client-side `<house-md-content>` rendering — different mechanism, same
     # user-visible result).

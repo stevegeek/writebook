@@ -1,4 +1,4 @@
-require "marten_markdown"
+require "marten_text"
 require "marten_storages"
 
 # Books app — the content domain. Owns Book, Leaf, Edit, Markdown,
@@ -17,7 +17,7 @@ require "./routes"
 #     so clicking an image pops it open (see _lightbox.html partial).
 #   - heading_anchor: adds an id-based permalink anchor next to each
 #     heading — the `.heading__link` styled "#" hover-anchor.
-MartenMarkdown.configure do |c|
+MartenText.configure do |c|
   c.image_wrapper = ->(url : String, alt : String, title : String?) {
     title_attr = (title && !title.empty?) ? %( title="#{title}") : ""
     %(<a#{title_attr} data-action="lightbox#open:prevent" data-lightbox-target="image" ) +

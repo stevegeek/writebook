@@ -4,19 +4,19 @@ require "../spec_helper"
 #
 # In the Marten port, the Rails `MarkdownRenderer` class has been
 # decomposed into:
-#   - `MartenMarkdown::Renderer` — the shared markd+tartrazine pipeline
-#     in the `marten-markdown` shard (`lib/marten_markdown/`).
+#   - `MartenText::Renderer` — the shared markd+tartrazine pipeline
+#     in the `marten-text` shard (`lib/marten_text/`).
 #   - host-supplied `image_wrapper` and `heading_anchor` hooks
 #     configured in `Books::App` (`src/books/app.cr`) that emit the
 #     Writebook-specific lightbox/anchor markup.
 #
 # The Rails test only asserts duplicate-heading IDs; that maps directly
-# to `MartenMarkdown::Renderer.render` because the heading hook receives
+# to `MartenText::Renderer.render` because the heading hook receives
 # already-deduped ids.
 describe "Markdown rendering (port of Rails MarkdownRenderer)" do
   describe "duplicate heading IDs" do
     it "generates unique IDs for duplicate headers" do
-      content = MartenMarkdown::Renderer.render(
+      content = MartenText::Renderer.render(
         "# Header 1\n\n## Duplicated Header\n\n### Duplicated header\n\n"
       )
 
@@ -31,7 +31,7 @@ describe "Markdown rendering (port of Rails MarkdownRenderer)" do
     it "wraps each <img> via the configured image_wrapper hook" do
       # Rails' MarkdownRenderer also wrapped images in a lightbox anchor;
       # the Marten port moves that to the Books::App image_wrapper hook.
-      html = MartenMarkdown::Renderer.render(%(![cat](/u.png "kitten")))
+      html = MartenText::Renderer.render(%(![cat](/u.png "kitten")))
       html.should contain(%(<img src="/u.png" alt="cat">))
       # Writebook's hook adds the lightbox stimulus attributes.
       html.should contain("lightbox")
@@ -40,7 +40,7 @@ describe "Markdown rendering (port of Rails MarkdownRenderer)" do
     it "highlights fenced code blocks with a known language" do
       # Rails: MarkdownRenderer.build used Rouge for highlighting.
       # Marten port: tartrazine, registered inside the shared renderer.
-      html = MartenMarkdown::Renderer.render("```ruby\nputs :hi\n```\n")
+      html = MartenText::Renderer.render("```ruby\nputs :hi\n```\n")
       html.should contain("<pre")
       html.should_not eq(Markd.to_html("```ruby\nputs :hi\n```\n"))
     end

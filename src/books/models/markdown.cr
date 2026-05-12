@@ -5,7 +5,7 @@ module Books
   # list below).
   #
   # Render pipeline + `to_html` / `plain_text` come from
-  # `MartenMarkdown::Renderable`. The two host-supplied hooks
+  # `MartenText::Renderable`. The two host-supplied hooks
   # (lightbox-wrapped images, heading anchor markup) are registered in
   # `Books::App` at app load.
   #
@@ -15,7 +15,7 @@ module Books
   # leafables here as they grow markdown bodies.
   class Markdown < Marten::Model
     include Marten::Template::CanDefineTemplateAttributes
-    include ::MartenMarkdown::Renderable
+    include ::MartenText::Renderable
 
     field :id, :big_int, primary_key: true, auto: true
     # Polymorphic `to:` must list at least two types — Crystal would

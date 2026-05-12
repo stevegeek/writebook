@@ -27,7 +27,7 @@ module Books::Leafables
     # of the markdown source through the regular renderer.
     def html_preview : String
       source = body.try(&.content) || ""
-      ::MartenMarkdown::Renderer.render(source[0, 1024])
+      ::MartenText::Renderer.render(source[0, 1024])
     end
 
     def word_count : Int32

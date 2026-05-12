@@ -38,6 +38,19 @@ Two Marten apps:
 
 See [`STATUS.md`](STATUS.md) for the porting log, build state, and gotchas worth remembering. See [`RAILS_TO_MARTEN.md`](RAILS_TO_MARTEN.md) for the porting playbook — Rails idiom ↔ Marten/Crystal recipe per pattern (polymorphic associations, concerns, has_secure_password, ActiveSupport::CurrentAttributes, etc).
 
+## Marten shards
+
+The port pulls in (and in some cases extends or extracts) several Marten shards. Each one is a Crystal/Marten analog of a Rails framework feature:
+
+| Shard | Rails analog |
+|---|---|
+| [`marten-text`](https://github.com/stevegeek/marten-text) | `ActionText` (polymorphic content row + `has_markdown` macro + render pipeline) |
+| [`marten-storages`](https://github.com/stevegeek/marten-storages) | `ActiveStorage` (polymorphic attachments + variants via `crystal-vips`) |
+| [`marten-delegated-type`](https://github.com/stevegeek/marten-delegated-type) | `ActiveRecord#delegated_type` |
+| [`marten-turbo`](https://github.com/stevegeek/marten-turbo) | `turbo-rails` (Frames + Streams + Broadcastable; fork at Turbo 8 parity) |
+| [`marten-cable`](https://github.com/stevegeek/marten-cable) | `ActionCable` (WS over `cable-cr/cable` + Marten session integration) |
+| [`marten-auth`](https://github.com/martenframework/marten-auth) | `has_secure_password` + session-cookie auth |
+
 ## Comparing against the Rails original
 
 The [`rails-archive`](../../tree/rails-archive) branch has the Rails source frozen at the fork point. To compare a feature:

@@ -42,7 +42,7 @@ describe "Books::Leafables::Page" do
       # FIXME(porting gap): The Rails test asserts that searchable_content
       # re-encodes `<`, `>`, `&` as `&lt; &gt; &amp;` (because Rails'
       # to_plain_text decodes them, then html_safe-wraps the result). The
-      # Marten port uses MartenMarkdown's `plain_text` which does not
+      # Marten port uses MartenText's `plain_text` which does not
       # re-encode entities.
     end
   end
