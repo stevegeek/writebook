@@ -7,13 +7,15 @@ module Accounts
   # Cache: 1 year / public (the QR code changes only when the join code is
   # regenerated, at which point the URL path changes too).
   class QrCodeHandler < Marten::Handler
+    include UrlHelpers
+
     def get
       code = params["code"].to_s
       account = Account.first!
 
       return head(:not_found) unless account.join_code == code
 
-      join_url = "#{request.scheme}://#{request.host}#{Marten.routes.reverse("accounts:users_new", join_code: code)}"
+      join_url = absolute_url("accounts:users_new", join_code: code)
 
       qr  = Goban::QR.encode_string(join_url)
       svg = Goban::SVGExporter.svg_string(qr, 4)

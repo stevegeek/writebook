@@ -6,6 +6,7 @@ module Accounts
   # links here for everyone, so admin-gating here was wrong.
   class UsersIndexHandler < Marten::Handlers::RecordList
     include AuthenticationHelpers
+    include UrlHelpers
 
     model User
     template_name "users/index.html"
@@ -26,9 +27,7 @@ module Accounts
     private def inject_account : Nil
       account = Account.first!
       context[:account] = account
-      join_path = Marten.routes.reverse("accounts:users_new", join_code: account.join_code)
-      base_url = "#{request.scheme}://#{request.host}"
-      context[:join_url] = base_url + join_path
+      context[:join_url] = absolute_url("accounts:users_new", join_code: account.join_code)
     end
   end
 
@@ -44,7 +43,7 @@ module Accounts
 
     def process_valid_schema
       me = current_user!
-      target = User.filter(active: true).get(id: params["id"])
+      target = User.active_get(params["id"])
       return head(:not_found) if target.nil?
 
       # Server-side guard mirroring the disabled-on-self UI control: an
@@ -69,7 +68,7 @@ module Accounts
 
     def post
       me = current_user!
-      target = User.filter(active: true).get(id: params["id"])
+      target = User.active_get(params["id"])
       return head(:not_found) if target.nil?
 
       # Cannot delete yourself.

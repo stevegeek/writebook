@@ -37,6 +37,7 @@ module Books
   # `app/views/leafables/show.md.erb`.
   class SectionsMarkdownHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include ::Accounts::UrlHelpers
 
     def get
       leaf = Leaf.get(pk: params["id"]?)
@@ -50,7 +51,7 @@ module Books
         return respond("Not found", status: 404)
       end
 
-      url = "#{request.scheme}://#{request.host}#{Marten.routes.reverse("sections:show", id: leaf.pk!)}"
+      url = absolute_url("sections:show", id: leaf.pk!)
       content = String.build do |io|
         io << "---\n"
         io << "title: " << %("#{leaf.title.to_s.gsub('"', "\\\"")}") << '\n'
@@ -138,6 +139,7 @@ module Books
 
   class SectionsEditHandler < Marten::Handlers::Schema
     include ::Accounts::AuthenticationHelpers
+    include LeafEditingBroadcast
 
     before_dispatch :require_authentication
     before_render :inject_book_context
@@ -204,18 +206,6 @@ module Books
       context[:edits_count] = target_leaf.edits.count
       context[:previous_leaf] = active.filter(position_score__lt: target_leaf.position_score!).order("-position_score").first
       context[:next_leaf] = active.filter(position_score__gt: target_leaf.position_score!).order(:position_score).first
-    end
-
-    private def broadcast_being_edited(target_leaf : Leaf) : Nil
-      user = current_user
-      return if user.nil?
-      stream = "leaf_#{target_leaf.pk!}_being_edited"
-      MartenTurbo.broadcast_append_to(
-        stream,
-        target: "leaf_#{target_leaf.pk!}_being_edited",
-        partial: "leaves/_being_edited_by.turbo_stream.html",
-        locals: {"leaf" => target_leaf, "user" => user},
-      )
     end
 
     private def leaf : Leaf?

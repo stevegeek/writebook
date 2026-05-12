@@ -12,6 +12,7 @@ module Accounts
   # auto-login link" UI just like Rails.
   class ProfilesShowHandler < Marten::Handler
     include AuthenticationHelpers
+    include UrlHelpers
 
     before_dispatch :require_authentication
 
@@ -22,8 +23,7 @@ module Accounts
       return head(:forbidden) unless authorized?(me, target)
 
       token = TransferToken.generate(target)
-      base_url = "#{request.scheme}://#{request.host}"
-      transfer_url = base_url + Marten.routes.reverse("accounts:transfers_show", token: token)
+      transfer_url = absolute_url("accounts:transfers_show", token: token)
       self_view = target.id == me.id
       render(
         "profiles/show.html",
@@ -46,7 +46,7 @@ module Accounts
       raw_id = params["id"]?
       return me if raw_id.nil?
       return me if raw_id.to_s == me.id.to_s
-      User.filter(active: true).get(id: raw_id)
+      User.active_get(raw_id)
     end
 
     private def authorized?(me : User, target : User) : Bool
@@ -66,6 +66,7 @@ module Accounts
   # to `users_url` (the People page) — we mirror that here.
   class ProfilesEditHandler < Marten::Handlers::Schema
     include AuthenticationHelpers
+    include UrlHelpers
 
     schema ProfileSchema
     template_name "profiles/edit.html"
@@ -119,7 +120,7 @@ module Accounts
         if raw_id.nil? || raw_id.to_s == me.id.to_s
           me
         else
-          User.filter(active: true).get!(id: raw_id)
+          User.active_get!(raw_id)
         end
       @target_user = resolved
       resolved
@@ -133,7 +134,7 @@ module Accounts
       # Cross-user edit only allowed for admins.
       return head(:forbidden) unless me.administrator?
       # Confirm the target exists; 404 if not.
-      target = User.filter(active: true).get(id: raw_id)
+      target = User.active_get(raw_id)
       return head(:not_found) if target.nil?
       nil
     end
@@ -145,8 +146,7 @@ module Accounts
     private def inject_transfer_url : Nil
       user = target_user
       token = TransferToken.generate(user)
-      base_url = "#{request.scheme}://#{request.host}"
-      context[:transfer_url] = base_url + Marten.routes.reverse("accounts:transfers_show", token: token)
+      context[:transfer_url] = absolute_url("accounts:transfers_show", token: token)
       self_view = target_user.id == current_user!.id
       context[:self_view] = self_view
       context[:transfer_other] = !self_view

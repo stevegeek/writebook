@@ -35,7 +35,7 @@ module Accounts
       user_id_str = TransferToken.verify(raw_token)
       return head(:bad_request) if user_id_str.nil?
 
-      user = User.filter(active: true).get(id: user_id_str.to_i64)
+      user = User.active_get(user_id_str.to_i64)
       return head(:bad_request) if user.nil?
 
       redeem_url = Marten.routes.reverse("accounts:transfers_redeem", token: raw_token)
@@ -51,7 +51,7 @@ module Accounts
       user_id_str = TransferToken.verify(raw_token)
       return head(:bad_request) if user_id_str.nil?
 
-      user = User.filter(active: true).get(id: user_id_str.to_i64)
+      user = User.active_get(user_id_str.to_i64)
       return head(:bad_request) if user.nil?
 
       MartenAuth.sign_in(request, user)
@@ -65,6 +65,7 @@ module Accounts
   # Cached for 1 year — same URL produces the same QR code.
   class SessionsTransfersQrHandler < Marten::Handler
     include AuthenticationHelpers
+    include UrlHelpers
 
     before_dispatch :require_authentication
 
@@ -73,8 +74,7 @@ module Accounts
       user_id_str = TransferToken.verify(raw_token)
       return head(:not_found) if user_id_str.nil?
 
-      transfer_url = "#{request.scheme}://#{request.host}" \
-                     "#{Marten.routes.reverse("accounts:transfers_show", token: raw_token)}"
+      transfer_url = absolute_url("accounts:transfers_show", token: raw_token)
 
       qr  = Goban::QR.encode_string(transfer_url)
       svg = Goban::SVGExporter.svg_string(qr, 4)

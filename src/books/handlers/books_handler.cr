@@ -35,6 +35,7 @@ module Books
 
   class BooksIndexHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include RequestParams
 
     def get
       # Mirror Rails' BooksController#ensure_index_is_not_empty: if anonymous and
@@ -58,23 +59,14 @@ module Books
       # Latest cover per book keyed by Int64 pk.
       cover_map = {} of Int64 => Attachment
       covers.each do |att|
-        rid = att.record_id
-        bid = case rid
-              when Int32 then rid.to_i64
-              when Int64 then rid
-              else next
-              end
+        bid = pk_to_i64(att.record_id)
+        next if bid.nil?
         cover_map[bid] ||= att
       end
 
       # Build NamedTuples so templates can access item.book and item.cover.
       book_entries = books.map do |book|
-        pk = book.pk
-        bid = case pk
-              when Int32 then pk.to_i64
-              when Int64 then pk
-              else nil
-              end
+        bid = pk_to_i64(book.pk)
         cover = bid ? cover_map[bid]? : nil
         {book: book, cover: cover}
       end
@@ -111,6 +103,7 @@ module Books
   class BooksNewHandler < Marten::Handlers::RecordCreate
     include ::Accounts::AuthenticationHelpers
     include BookCoverUploadHelpers
+    include RequestParams
 
     before_dispatch :require_authentication
 
@@ -140,7 +133,7 @@ module Books
       users = ::Accounts::User.active.ordered.to_a
 
       # On the new form, the creating user is the only editor/reader by default.
-      uid = user_pk(creating_user)
+      uid = pk_to_i64(creating_user.try(&.id))
       default_ids = uid.nil? ? ([] of Int64) : [uid]
 
       context[:users] = users
@@ -156,32 +149,12 @@ module Books
       editor_ids = collect_ids("editor_ids")
       reader_ids = collect_ids("reader_ids")
 
-      if (uid = user_pk(current_user))
+      if (uid = pk_to_i64(current_user.try(&.id)))
         editor_ids << uid unless editor_ids.includes?(uid)
         reader_ids << uid unless reader_ids.includes?(uid)
       end
 
       book.update_access(editor_ids: editor_ids, reader_ids: reader_ids)
-    end
-
-    private def collect_ids(param_name : String) : Array(Int64)
-      values = request.data.fetch_all(param_name, nil)
-      return [] of Int64 if values.nil?
-      values.compact_map do |v|
-        str = v.to_s
-        next nil if str.empty?
-        Int64.new(str) rescue nil
-      end
-    end
-
-    private def user_pk(user : ::Accounts::User?) : Int64?
-      return nil if user.nil?
-      raw = user.id
-      case raw
-      when Int32 then raw.to_i64
-      when Int64 then raw
-      else            nil
-      end
     end
   end
 
@@ -293,12 +266,13 @@ module Books
   # `<link rel="alternate" type="text/markdown">`.
   class BooksMarkdownHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include ::Accounts::UrlHelpers
 
     def get
       book = Book.accessable_or_published(current_user).filter(pk: params["id"]?).first
       return respond("Not found", status: 404) if book.nil?
 
-      url = "#{request.scheme}://#{request.host}#{Marten.routes.reverse("books:show", id: book.pk!)}"
+      url = absolute_url("books:show", id: book.pk!)
       content = String.build do |io|
         io << "---\n"
         io << "title: " << %("#{book.title.to_s.gsub('"', "\\\"")}") << '\n'

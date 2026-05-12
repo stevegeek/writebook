@@ -4,6 +4,7 @@ module Books
   # POST /books/<book_id>/accesses — updates access and redirects to book show
   class AccessesHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include RequestParams
 
     @book : Book? = nil
 
@@ -20,16 +21,9 @@ module Books
       reader_ids = collect_ids("reader_ids")
 
       # Always include the current user as editor+reader
-      if (u = current_user)
-        raw_id = u.id
-        uid = case raw_id
-              when Int32 then raw_id.to_i64
-              when Int64 then raw_id
-              end
-        if uid
-          editor_ids << uid unless editor_ids.includes?(uid)
-          reader_ids << uid unless reader_ids.includes?(uid)
-        end
+      if (uid = pk_to_i64(current_user.try(&.id)))
+        editor_ids << uid unless editor_ids.includes?(uid)
+        reader_ids << uid unless reader_ids.includes?(uid)
       end
 
       # Persist the everyone_access flag from the form *before* update_access
@@ -69,20 +63,8 @@ module Books
 
       # Pre-compute sets so the template doesn't need to call methods with user args.
       accesses = ::Accounts::Access.filter(book_id: book.pk!).to_a
-      editor_ids = accesses.select(&.editor?).compact_map do |a|
-        uid = a.user_id
-        case uid
-        when Int32 then uid.to_i64
-        when Int64 then uid
-        end
-      end
-      reader_ids = accesses.compact_map do |a|
-        uid = a.user_id
-        case uid
-        when Int32 then uid.to_i64
-        when Int64 then uid
-        end
-      end
+      editor_ids = accesses.select(&.editor?).compact_map { |a| pk_to_i64(a.user_id) }
+      reader_ids = accesses.compact_map { |a| pk_to_i64(a.user_id) }
 
       {
         book:       book,
@@ -91,18 +73,6 @@ module Books
         reader_ids: reader_ids,
         signed_in:  true,
       }
-    end
-
-    # Parse a multi-value param submitted as repeated keys (editor_ids=1&editor_ids=2)
-    # and return an array of Int64 IDs.
-    private def collect_ids(param_name : String) : Array(Int64)
-      values = request.data.fetch_all(param_name, nil)
-      return [] of Int64 if values.nil?
-      values.compact_map do |v|
-        str = v.to_s
-        next nil if str.empty?
-        Int64.new(str) rescue nil
-      end
     end
   end
 end

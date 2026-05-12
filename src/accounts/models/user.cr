@@ -21,6 +21,22 @@ module Accounts
     scope :active { filter(active: true) }
     scope :ordered { order(:name) }
 
+    # Convenience for the common "look up an active user by id, return nil
+    # if not found or deactivated" pattern that handlers used to spell as
+    # `User.filter(active: true).get(id: <raw_id>)`. Accepts any id type
+    # Marten's `get` will (Int32 / Int64 / String / nil) and returns nil
+    # for nil input.
+    def self.active_get(id) : User?
+      return nil if id.nil?
+      active.get(id: id)
+    end
+
+    # `active_get!` raises Marten::DB::Errors::RecordNotFound if no active
+    # user matches. Mirrors Marten's `get!` semantics.
+    def self.active_get!(id) : User
+      active.get!(id: id)
+    end
+
     # Mirrors Rails User#after_create grant_access_to_everyone_books — every
     # newly-joined user is auto-granted reader access to every book that has
     # `everyone_access: true`.
