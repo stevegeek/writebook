@@ -1,7 +1,11 @@
 {# Publication switch UI for the book sidebar. Mirrors writebook-rails        #}
-{# app/views/books/publications/_publication.html.erb. Rendered inside the    #}
-{# `book_publication_<id>` turbo-frame on books/show.html and inside a        #}
-{# turbo-stream replace on POST /books/<id>/publication.                       #}
+{# app/views/books/publications/_publication.html.erb. The partial renders     #}
+{# its own <turbo-frame> so the same template works both for the initial      #}
+{# render in books/show.html and for the turbo-stream replace on              #}
+{# POST /books/<id>/publication (the replace action swaps the entire          #}
+{# matching #book_publication_<id> element, so the new content must include   #}
+{# the frame wrapper too).                                                    #}
+{% turbo_frame frame_id %}
 <div class="book-publication flex flex-column gap margin-block-start pad {% if book.published %}fill-selected{% else %}fill-shade{% endif %} border-radius">
   {% if editable %}
     <div class="flex align-center justify-center gap-half center">
@@ -44,3 +48,4 @@
     </div>
   {% endif %}
 </div>
+{% end_turbo_frame %}

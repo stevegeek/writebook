@@ -71,9 +71,8 @@
     {% endif %}
 
     {% if editable %}
-      {% turbo_frame publication_frame_id %}
-        {% include "books/publications/_publication.html" %}
-      {% end_turbo_frame %}
+      {# The partial renders its own <turbo-frame id="{{ frame_id }}">. #}
+      {% include "books/publications/_publication.html" %}
     {% endif %}
 
     <span data-controller="edit-mode" data-edit-mode-editing-class="edit-mode"></span>

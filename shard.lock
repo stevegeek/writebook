@@ -33,10 +33,6 @@ shards:
     git: https://github.com/ralsina/docopt.cr.git
     version: 0.3.1
 
-  encoded_id_cr: # Overridden
-    path: ../encoded-id-cr
-    version: 0.1.0
-
   future:
     git: https://github.com/crystal-community/future.cr.git
     version: 1.0.0
@@ -69,8 +65,8 @@ shards:
     path: ../marten-cable
     version: 0.1.0
 
-  marten_encoded_id:
-    path: ../marten-encoded-id
+  marten_delegated_type: # Overridden
+    path: ../marten-delegated-type
     version: 0.1.0
 
   marten_turbo:

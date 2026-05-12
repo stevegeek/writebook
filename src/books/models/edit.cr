@@ -1,10 +1,12 @@
+require "marten_delegated_type"
+
 module Books
   # Revision/trash record for a leaf. Stores a snapshot pointer to the
   # leafable that *was* attached at the time of the edit (so we can show
   # diff history), and an event type ("revision" | "trash").
   class Edit < Marten::Model
     include Marten::Template::CanDefineTemplateAttributes
-    include DelegatedType
+    include MartenDelegatedType
 
     field :id, :big_int, primary_key: true, auto: true
     field :leaf, :many_to_one, to: Books::Leaf, related: :edits, on_delete: :cascade

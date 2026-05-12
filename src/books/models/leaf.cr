@@ -1,7 +1,9 @@
+require "marten_delegated_type"
+
 module Books
   class Leaf < Marten::Model
     include Marten::Template::CanDefineTemplateAttributes
-    include DelegatedType
+    include MartenDelegatedType
     include Positionable
     include Editable
     include Searchable

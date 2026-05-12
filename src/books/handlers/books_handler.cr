@@ -103,7 +103,8 @@ module Books
       context[:signed_in] = signed_in?
       context[:editable] = book.editable?(current_user)
       context[:cover] = AttachmentHelpers.find_one(record: book, name: "cover")
-      context[:publication_frame_id] = "book_publication_#{book.pk}"
+      # Used by books/publications/_publication.html for its own {% turbo_frame %}.
+      context[:frame_id] = "book_publication_#{book.pk}"
     end
   end
 
@@ -241,7 +242,10 @@ module Books
     before_dispatch :ensure_editable
 
     def get
-      render("books/publications/_publication.html", context: {book: book, editable: true})
+      render(
+        "books/publications/_publication.html",
+        context: {book: book, editable: true, frame_id: "book_publication_#{book.pk}"},
+      )
     end
 
     def post
@@ -252,15 +256,12 @@ module Books
       book.save!
 
       if request.turbo?
-        # Render the partial (frame contents) and wrap it in a `replace`
-        # turbo-stream targeting the publication frame's id.
-        partial_html = Marten.templates
-          .get_template("books/publications/_publication.html")
-          .render(Marten::Template::Context{"book" => book, "editable" => true})
         frame_id = "book_publication_#{book.pk}"
-        wrapped = %(<turbo-frame id="#{frame_id}">#{partial_html}</turbo-frame>)
-        stream = MartenTurbo::TurboStream.replace(frame_id, wrapped)
-        turbo_stream(stream)
+        turbo_frame_replace(
+          frame_id,
+          partial: "books/publications/_publication.html",
+          locals: {book: book, editable: true, frame_id: frame_id},
+        )
       else
         redirect(Marten.routes.reverse("books:show", id: book.pk!))
       end

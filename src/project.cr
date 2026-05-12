@@ -1,8 +1,6 @@
 require "marten"
 require "sqlite3"
-require "encoded_id_cr"
 require "marten_auth"
-require "marten_encoded_id"
 require "marten_turbo"
 require "marten_cable"
 require "markd"

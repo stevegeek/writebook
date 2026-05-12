@@ -4,10 +4,8 @@ version: 0.1.0
 # `marten` is a transitive dep via marten_turbo — declared as a path-pin in
 # shard.override.yml (gitignored, per workspace convention).
 dependencies:
-  encoded_id_cr:
-    path: ../encoded-id-cr
-  marten_encoded_id:
-    path: ../marten-encoded-id
+  marten_delegated_type:
+    github: stevegeek/marten-delegated-type
   marten_turbo:
     path: ../marten-turbo
   marten_cable:
