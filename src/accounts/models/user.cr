@@ -11,6 +11,8 @@ module Accounts
   # enum-by-string, and an `active` deactivation flag.
   class User < MartenAuth::User
     include Role
+    include MartenSignedId::ModelMixin
+    include Transferable
 
     field :name, :string, max_size: 255, blank: false, null: false
     field :role, :string, max_size: 32, blank: false, null: false, default: "member"

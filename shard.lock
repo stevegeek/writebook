@@ -81,6 +81,10 @@ shards:
     path: ../marten-delegated-type
     version: 0.1.0
 
+  marten_signed_id: # Overridden
+    path: ../marten-signed-id
+    version: 0.1.0
+
   marten_storages: # Overridden
     path: ../marten-storages
     version: 0.1.0
