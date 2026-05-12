@@ -1,1 +1,0 @@
-handbook_reading_image_blob: <%= ActiveStorage::FixtureSet.blob filename: "reading.webp", service_name: "test" %>
