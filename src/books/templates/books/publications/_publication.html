@@ -33,7 +33,7 @@
       </label>
 
       <div class="flex align-center gap">
-        <button type="button" class="btn" data-controller="clipboard" data-clipboard-source-value="#invite_url" data-action="clipboard#copy">
+        <button type="button" class="btn" data-controller="copy-to-clipboard" data-action="copy-to-clipboard#copy" data-copy-to-clipboard-content-value="{% url 'books:show' id: book.id %}" data-copy-to-clipboard-success-class="btn--success">
           <img src="{% asset 'images/copy-paste.svg' %}" aria-hidden="true" width="24" height="24" class="colorize--black" alt="">
           <span class="for-screen-reader">Copy public link</span>
         </button>

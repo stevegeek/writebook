@@ -27,7 +27,7 @@
       </dialog>
     </div>
 
-    <button class="btn" data-controller="copy-to-clipboard" data-copy-to-clipboard-text-value="{{ join_url }}">
+    <button class="btn" data-controller="copy-to-clipboard" data-action="copy-to-clipboard#copy" data-copy-to-clipboard-content-value="{{ join_url }}" data-copy-to-clipboard-success-class="btn--success">
       <img src="{% asset 'images/copy-paste.svg' %}" aria-hidden="true" width="24" height="24" class="colorize--black" alt="">
       <span class="for-screen-reader">Copy join link</span>
     </button>

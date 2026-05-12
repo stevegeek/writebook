@@ -1,5 +1,9 @@
 module Accounts
-  # GET /users — admin-only list of active users + join-code share link.
+  # GET /users — signed-in-visible list of active users + join-code share link.
+  # Per-row role-toggle / delete controls are disabled in `_user.html` for
+  # non-admins. Matches Rails, which lets any signed-in user view the people
+  # list (just with read-only controls). The cog icon on the library page
+  # links here for everyone, so admin-gating here was wrong.
   class UsersIndexHandler < Marten::Handlers::RecordList
     include AuthenticationHelpers
 
@@ -8,7 +12,6 @@ module Accounts
     list_context_name "users"
 
     before_dispatch :require_authentication
-    before_dispatch :require_admin
     before_render :inject_account
 
     def queryset
