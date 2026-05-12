@@ -35,6 +35,7 @@ require "./books/cli/seed_manual"
 
 # Project-cross-cutting template tags (translation popover used in both apps).
 require "./translations"
+require "./leafable_helpers"
 
 # Project-level routes (mounts each app's routes module).
 require "../config/routes"

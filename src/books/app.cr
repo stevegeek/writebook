@@ -32,5 +32,14 @@ end
 module Books
   class App < Marten::App
     label "books"
+
+    # Register the three leafable_* custom template tags. Naming doesn't
+    # collide with anything in Marten core / marten-turbo, so registration
+    # ordering doesn't matter here.
+    def setup
+      Marten::Template::Tag.register("leafable_url", LeafableHelpers::LeafableUrlTag)
+      Marten::Template::Tag.register("leafable_edit_url", LeafableHelpers::LeafableEditUrlTag)
+      Marten::Template::Tag.register("leafable_class", LeafableHelpers::LeafableClassTag)
+    end
   end
 end
