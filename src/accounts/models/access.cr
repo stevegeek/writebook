@@ -13,6 +13,9 @@ module Accounts
     db_unique_constraint :access_user_book_unique, field_names: [:user_id, :book_id]
     db_index :access_book_idx, field_names: [:book_id]
 
+    scope :reader { filter(level: "reader") }
+    scope :editor { filter(level: "editor") }
+
     def editor?
       level == "editor"
     end

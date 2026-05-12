@@ -5,17 +5,14 @@ module Books
   # and `Accounts::Access`.
   module Accessable
     macro included
-      def self.with_everyone_access
-        filter(everyone_access: true)
-      end
-
-      def self.published
-        filter(published: true)
-      end
+      scope :with_everyone_access { filter(everyone_access: true) }
+      scope :published { filter(published: true) }
 
       # Books visible to the given user (or to no-one if anonymous): direct
       # accesses OR published. Marten's QuerySet has no `union` operator,
       # so we OR the two predicates with a single combined filter via Q.
+      # Parameterised + returns a typed queryset — kept as a class method
+      # rather than a scope.
       def self.accessable_or_published(user : ::Accounts::User?) : Marten::DB::Query::Set(self)
         if user
           uid = user.id

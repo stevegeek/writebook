@@ -11,17 +11,9 @@ module Books
     macro included
       before_create :insert_at_default_position
 
-      def self.positioned
-        order(:position_score, :id)
-      end
-
-      def self.before(other)
-        positioned.filter(position_score__lt: other.position_score!)
-      end
-
-      def self.after(other)
-        positioned.filter(position_score__gt: other.position_score!)
-      end
+      scope :positioned { order(:position_score, :id) }
+      scope :before { |other| positioned.filter(position_score__lt: other.position_score!) }
+      scope :after { |other| positioned.filter(position_score__gt: other.position_score!) }
 
       private def insert_at_default_position : Nil
         if position_score.nil? || position_score == 0.0

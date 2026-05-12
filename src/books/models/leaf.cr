@@ -32,13 +32,8 @@ module Books
 
     db_index :leaf_book_status_idx, field_names: [:book_id, :status]
 
-    def self.active
-      filter(status: "active")
-    end
-
-    def self.trashed
-      filter(status: "trashed")
-    end
+    scope :active { filter(status: "active") }
+    scope :trashed { filter(status: "trashed") }
 
     def self.with_leafables
       # Marten's `prefetch` doesn't work directly with polymorphic, so we

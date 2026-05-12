@@ -20,6 +20,8 @@ module Accounts
 
     scope :active { filter(active: true) }
     scope :ordered { order(:name) }
+    scope :member        { filter(role: "member") }
+    scope :administrator { filter(role: "administrator") }
 
     # Convenience for the common "look up an active user by id, return nil
     # if not found or deactivated" pattern that handlers used to spell as

@@ -23,26 +23,20 @@ module Books
 
     db_index :edit_leaf_idx, field_names: [:leaf_id, :created_at]
 
-    def self.revisions
-      filter(event: "revision")
-    end
-
-    def self.trashes
-      filter(event: "trash")
-    end
+    scope :revision { filter(event: "revision") }
+    scope :trash    { filter(event: "trash") }
+    scope :sorted   { order("-created_at") }
+    scope :before   { |other| filter(created_at__lt: other.created_at!) }
+    scope :after    { |other| filter(created_at__gt: other.created_at!) }
 
     # Mirrors Rails' Edit#previous / #next — the chronologically prior/next
     # edit for the same leaf. Used by the edits/show.html prev/next nav.
     def previous_edit : Edit?
-      ts = created_at
-      return nil if ts.nil?
-      Edit.filter(leaf_id: leaf_id, created_at__lt: ts).order("-created_at").first
+      leaf!.edits.before(self).sorted.first
     end
 
     def next_edit : Edit?
-      ts = created_at
-      return nil if ts.nil?
-      Edit.filter(leaf_id: leaf_id, created_at__gt: ts).order(:created_at).first
+      leaf!.edits.after(self).sorted.last
     end
   end
 end

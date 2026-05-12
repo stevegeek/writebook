@@ -24,9 +24,13 @@ module Books
       self.slug = SluggableHelpers.populate_if_blank(slug, title.to_s)
     end
 
-    def self.ordered
-      order(:title)
-    end
+    scope :ordered { order(:title) }
+
+    # Mirrors Rails' `enum :theme, %w[...], suffix: true` — generates one
+    # filter scope per theme: Book.black_theme, Book.blue_theme, etc.
+    {% for theme in %w[black blue green magenta orange violet white] %}
+      scope :{{theme.id}}_theme { filter(theme: {{theme}}) }
+    {% end %}
 
     # Aggregate Markdown for export — concatenates each leafable's `markable`
     # output across the book's active leaves in display order.
