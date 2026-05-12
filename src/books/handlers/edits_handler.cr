@@ -17,27 +17,27 @@ module Books
   # button on the edit toolbar (`leaves/_history.html`).
   class EditsIndexHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include LeafScoped
 
     before_dispatch :require_authentication
+    before_dispatch :require_leaf
+    before_dispatch :ensure_editable
 
     def get
-      target_leaf = leaf
-      return respond("Not found", status: 404) if target_leaf.nil?
-
-      target_book = target_leaf.book!
-      return head :forbidden unless target_book.editable?(current_user)
-
+      target_leaf = leaf!
       edits = target_leaf.edits.order("-created_at").to_a
 
       render("leaves/edits/index.html", context: {
         leaf:  target_leaf,
-        book:  target_book,
+        book:  book!,
         edits: edits,
       })
     end
 
-    private def leaf : Leaf?
-      Leaf.get(pk: params["leaf_id"]?)
+    # Routed under /leaves/<leaf_id>/edits — the leaf identifier is `leaf_id`,
+    # not `id` (which would collide with the Edit pk on the show route).
+    protected def leaf_param_name : String
+      "leaf_id"
     end
   end
 
@@ -49,16 +49,14 @@ module Books
   # string `"latest"`.
   class EditsShowHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include LeafScoped
 
     before_dispatch :require_authentication
+    before_dispatch :require_leaf
+    before_dispatch :ensure_editable
 
     def get
-      target_leaf = leaf
-      return respond("Not found", status: 404) if target_leaf.nil?
-
-      target_book = target_leaf.book!
-      return head :forbidden unless target_book.editable?(current_user)
-
+      target_leaf = leaf!
       edit = resolve_edit(target_leaf)
       return respond("Revision not found", status: 404) if edit.nil?
 
@@ -71,7 +69,7 @@ module Books
 
       render("leaves/edits/show.html", context: {
         leaf:            target_leaf,
-        book:            target_book,
+        book:            book!,
         edit:            edit,
         previous_edit:   edit.previous_edit,
         next_edit:       edit.next_edit,
@@ -79,6 +77,12 @@ module Books
         current_html:    current_html,
         edit_url:        Marten.routes.reverse("pages:edit", id: target_leaf.pk!),
       })
+    end
+
+    # Routed under /leaves/<leaf_id>/edits/<id> — the leaf identifier is
+    # `leaf_id`; `id` refers to the Edit pk on this route.
+    protected def leaf_param_name : String
+      "leaf_id"
     end
 
     private def resolve_edit(target_leaf : Leaf) : Edit?
@@ -105,10 +109,6 @@ module Books
       else
         ""
       end
-    end
-
-    private def leaf : Leaf?
-      Leaf.get(pk: params["leaf_id"]?)
     end
   end
 end

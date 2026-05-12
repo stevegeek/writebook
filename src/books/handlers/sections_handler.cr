@@ -38,23 +38,24 @@ module Books
   class SectionsMarkdownHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
     include ::Accounts::UrlHelpers
+    include LeafScoped
+
+    before_dispatch :require_leaf
 
     def get
-      leaf = Leaf.get(pk: params["id"]?)
-      return respond("Not found", status: 404) if leaf.nil?
-
-      section = leaf.leafable.try(&.as?(Leafables::Section))
+      target_leaf = leaf!
+      section = target_leaf.leafable.try(&.as?(Leafables::Section))
       return respond("Not a section", status: 404) if section.nil?
 
-      book = leaf.book!
-      unless book.published || book.accessable?(current_user) || book.editable?(current_user)
+      target_book = book!
+      unless target_book.published || target_book.accessable?(current_user) || target_book.editable?(current_user)
         return respond("Not found", status: 404)
       end
 
-      url = absolute_url("sections:show", id: leaf.pk!)
+      url = absolute_url("sections:show", id: target_leaf.pk!)
       content = String.build do |io|
         io << "---\n"
-        io << "title: " << %("#{leaf.title.to_s.gsub('"', "\\\"")}") << '\n'
+        io << "title: " << %("#{target_leaf.title.to_s.gsub('"', "\\\"")}") << '\n'
         io << "url: " << %("#{url}") << '\n'
         io << "---\n\n"
         io << section.markable
@@ -100,38 +101,34 @@ module Books
   # dispatch for sections in `app/views/leafables/show.html.erb`.
   class SectionsShowHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include LeafScoped
+
+    before_dispatch :require_leaf
 
     def get
-      leaf = Leaf.get(pk: params["id"]?)
-      return respond("Not found", status: 404) if leaf.nil?
-
-      section = leaf.leafable.try(&.as?(Leafables::Section))
+      target_leaf = leaf!
+      section = target_leaf.leafable.try(&.as?(Leafables::Section))
       return respond("Not a section", status: 404) if section.nil?
 
-      book = leaf.book!
-      active_leaves = book.leaves.filter(status: "active")
-      prev_leaf = active_leaves.filter(position_score__lt: leaf.position_score!).order("-position_score").first
-      next_leaf = active_leaves.filter(position_score__gt: leaf.position_score!).order(:position_score).first
-      leaves = active_leaves.order(:position_score, :id).to_a
+      target_book = book!
 
       request.cookies.set(
-        "reading_progress_#{book.pk}",
-        leaf.id.to_s,
+        "reading_progress_#{target_book.pk}",
+        target_leaf.id.to_s,
         expires: 1.year.from_now,
         path: "/"
       )
 
-      edit_url = Marten.routes.reverse("sections:edit", id: leaf.pk!)
       render("sections/show.html", context: {
-        leaf:          leaf,
+        leaf:          target_leaf,
         section:       section,
-        book:          book,
-        leaves:        leaves,
-        previous_leaf: prev_leaf,
+        book:          target_book,
+        leaves:        active_leaves.order(:position_score, :id).to_a,
+        previous_leaf: previous_leaf,
         next_leaf:     next_leaf,
         signed_in:     signed_in?,
-        editable:      book.editable?(current_user),
-        edit_url:      edit_url,
+        editable:      target_book.editable?(current_user),
+        edit_url:      Marten.routes.reverse("sections:edit", id: target_leaf.pk!),
         search:        request.query_params["search"]?.try(&.strip).presence,
       })
     end
@@ -139,6 +136,7 @@ module Books
 
   class SectionsEditHandler < Marten::Handlers::Schema
     include ::Accounts::AuthenticationHelpers
+    include LeafScoped
     include LeafEditingBroadcast
 
     before_dispatch :require_authentication
@@ -192,11 +190,9 @@ module Books
     private def inject_book_context : Nil
       target_leaf = leaf
       return if target_leaf.nil?
-      book = target_leaf.book!
-      active = book.leaves.filter(status: "active")
-      context[:book] = book
-      context[:leaves] = active.order(:position_score, :id).to_a
-      context[:editable] = book.editable?(current_user)
+      context[:book] = book!
+      context[:leaves] = active_leaves.order(:position_score, :id).to_a
+      context[:editable] = book!.editable?(current_user)
       # Sections render through pages:show in reading mode (Rails uses the same      #
       # leafable_slug_path for both); the edit-mode toggle on a section's edit page  #
       # therefore points at pages:show.                                              #
@@ -204,12 +200,8 @@ module Books
       context[:show_url] = Marten.routes.reverse("pages:show", id: target_leaf.pk!)
       context[:being_edited_stream] = "leaf_#{target_leaf.pk!}_being_edited"
       context[:edits_count] = target_leaf.edits.count
-      context[:previous_leaf] = active.filter(position_score__lt: target_leaf.position_score!).order("-position_score").first
-      context[:next_leaf] = active.filter(position_score__gt: target_leaf.position_score!).order(:position_score).first
-    end
-
-    private def leaf : Leaf?
-      Leaf.get(pk: params["id"]?)
+      context[:previous_leaf] = previous_leaf
+      context[:next_leaf] = next_leaf
     end
 
     private def section : Leafables::Section?

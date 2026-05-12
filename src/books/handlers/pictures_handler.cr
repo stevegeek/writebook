@@ -54,23 +54,24 @@ module Books
   class PicturesMarkdownHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
     include ::Accounts::UrlHelpers
+    include LeafScoped
+
+    before_dispatch :require_leaf
 
     def get
-      leaf = Leaf.get(pk: params["id"]?)
-      return respond("Not found", status: 404) if leaf.nil?
-
-      picture = leaf.leafable.try(&.as?(Leafables::Picture))
+      target_leaf = leaf!
+      picture = target_leaf.leafable.try(&.as?(Leafables::Picture))
       return respond("Not a picture", status: 404) if picture.nil?
 
-      book = leaf.book!
-      unless book.published || book.accessable?(current_user) || book.editable?(current_user)
+      target_book = book!
+      unless target_book.published || target_book.accessable?(current_user) || target_book.editable?(current_user)
         return respond("Not found", status: 404)
       end
 
-      url = absolute_url("pictures:show", id: leaf.pk!)
+      url = absolute_url("pictures:show", id: target_leaf.pk!)
       content = String.build do |io|
         io << "---\n"
-        io << "title: " << %("#{leaf.title.to_s.gsub('"', "\\\"")}") << '\n'
+        io << "title: " << %("#{target_leaf.title.to_s.gsub('"', "\\\"")}") << '\n'
         io << "url: " << %("#{url}") << '\n'
         io << "---\n\n"
         io << picture.markable
@@ -114,46 +115,43 @@ module Books
 
   class PicturesShowHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include LeafScoped
+
+    before_dispatch :require_leaf
 
     def get
-      leaf = Leaf.get(pk: params["id"]?)
-      return respond("Not found", status: 404) if leaf.nil?
-
-      picture = leaf.leafable.try(&.as?(Leafables::Picture))
+      target_leaf = leaf!
+      picture = target_leaf.leafable.try(&.as?(Leafables::Picture))
       return respond("Not a picture", status: 404) if picture.nil?
 
-      book = leaf.book!
-      active_leaves = book.leaves.filter(status: "active")
-      prev_leaf = active_leaves.filter(position_score__lt: leaf.position_score!).order("-position_score").first
-      next_leaf = active_leaves.filter(position_score__gt: leaf.position_score!).order(:position_score).first
-      leaves = active_leaves.order(:position_score, :id).to_a
+      target_book = book!
 
       request.cookies.set(
-        "reading_progress_#{book.pk}",
-        leaf.id.to_s,
+        "reading_progress_#{target_book.pk}",
+        target_leaf.id.to_s,
         expires: 1.year.from_now,
         path: "/"
       )
 
       attachment = MartenStorages::Service.find_one(model: Attachment, record: picture, name: "image")
-      edit_url = Marten.routes.reverse("pictures:edit", id: leaf.pk!)
       render("pictures/show.html", context: {
-        leaf:          leaf,
+        leaf:          target_leaf,
         picture:       picture,
-        book:          book,
-        leaves:        leaves,
-        previous_leaf: prev_leaf,
+        book:          target_book,
+        leaves:        active_leaves.order(:position_score, :id).to_a,
+        previous_leaf: previous_leaf,
         next_leaf:     next_leaf,
         attachment:    attachment,
         signed_in:     signed_in?,
-        editable:      book.editable?(current_user),
-        edit_url:      edit_url,
+        editable:      target_book.editable?(current_user),
+        edit_url:      Marten.routes.reverse("pictures:edit", id: target_leaf.pk!),
       })
     end
   end
 
   class PicturesEditHandler < Marten::Handlers::Schema
     include ::Accounts::AuthenticationHelpers
+    include LeafScoped
     include LeafEditingBroadcast
 
     before_dispatch :require_authentication
@@ -216,21 +214,15 @@ module Books
     private def inject_book_context : Nil
       target_leaf = leaf
       return if target_leaf.nil?
-      book = target_leaf.book!
-      active = book.leaves.filter(status: "active")
-      context[:book] = book
-      context[:leaves] = active.order(:position_score, :id).to_a
-      context[:editable] = book.editable?(current_user)
+      context[:book] = book!
+      context[:leaves] = active_leaves.order(:position_score, :id).to_a
+      context[:editable] = book!.editable?(current_user)
       context[:edit_url] = Marten.routes.reverse("pictures:edit", id: target_leaf.pk!)
       context[:show_url] = Marten.routes.reverse("pictures:show", id: target_leaf.pk!)
       context[:being_edited_stream] = "leaf_#{target_leaf.pk!}_being_edited"
       context[:edits_count] = target_leaf.edits.count
-      context[:previous_leaf] = active.filter(position_score__lt: target_leaf.position_score!).order("-position_score").first
-      context[:next_leaf] = active.filter(position_score__gt: target_leaf.position_score!).order(:position_score).first
-    end
-
-    private def leaf : Leaf?
-      Leaf.get(pk: params["id"]?)
+      context[:previous_leaf] = previous_leaf
+      context[:next_leaf] = next_leaf
     end
 
     private def picture : Leafables::Picture?
