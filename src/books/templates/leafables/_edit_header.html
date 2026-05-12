@@ -1,0 +1,58 @@
+{# Edit page nav header. Mirrors writebook-rails' leafables/_edit_header.html.erb. #}
+{# Context vars required: leaf (always), book (always — handlers inject it via   #}
+{# inject_book_context). Optional: previous_leaf (if computed by handler).       #}
+<nav>
+  {% include "leaves/_sidebar_toggle.html" %}
+
+  {# Previous leafable link — falls back to book TOC. Same url-dispatch as     #}
+  {# the show-page header partial.                                              #}
+  {% if previous_leaf %}
+    {% if previous_leaf.leafable_type == "Books::Leafables::Picture" %}
+      <a href="{% url 'pictures:edit' id: previous_leaf.id %}" class="btn">
+        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
+      </a>
+    {% elsif previous_leaf.leafable_type == "Books::Leafables::Section" %}
+      <a href="{% url 'sections:edit' id: previous_leaf.id %}" class="btn">
+        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
+      </a>
+    {% else %}
+      <a href="{% url 'pages:edit' id: previous_leaf.id %}" class="btn">
+        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
+      </a>
+    {% endif %}
+  {% else %}
+    <a href="{% url 'books:show' id: leaf.book_id %}" class="btn">
+      <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Table of contents</span>
+    </a>
+  {% endif %}
+
+  <div class="breadcrumbs">
+    {% include "books/_index_link.html" %}
+    <span class="flex-item-no-shrink">&#9656;</span>
+    {% if book %}
+      <a href="{% url 'books:show' id: book.id %}">{{ book.title }}</a>
+    {% else %}
+      <a href="{% url 'books:show' id: leaf.book_id %}">Book</a>
+    {% endif %}
+    <span class="flex-item-no-shrink">&#9656;</span>
+    <div class="flex align-center gap-half min-width">
+      <strong class="min-width">
+        {# Title input is wired to the main leafable-editor form via form= attribute #}
+        <input type="text" name="title" value="{{ leaf.title }}"
+               form="leafable-editor"
+               class="input full-width" autocomplete="off">
+      </strong>
+    </div>
+  </div>
+
+  <button class="btn" data-action="fullscreen#toggle" data-fullscreen-target="button">
+    <img src="{% asset 'images/expand.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Enter fullscreen</span>
+  </button>
+
+  {% if book %}{% include "books/searches/_search.html" %}{% endif %}
+</nav>

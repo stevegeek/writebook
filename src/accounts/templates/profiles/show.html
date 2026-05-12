@@ -1,0 +1,38 @@
+{% extend "base.html" %}
+
+{% block title %}{{ user.name }}{% endblock %}
+
+{% block header %}
+<nav>
+  <a href="{% url 'accounts:users_index' %}" class="btn">
+    <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Go back</span>
+  </a>
+
+  <div class="breadcrumbs">
+    <a href="{% url 'books:index' %}" class="btn borderless txt-small flex-item-no-shrink">
+      <img src="{% asset 'images/books.svg' %}" aria-hidden="true" width="19" height="19" class="colorize--black" alt="Library">
+      <span class="for-screen-reader">Library</span>
+    </a>
+    <span class="flex-item-no-shrink">▸</span>
+    <a href="{% url 'accounts:users_index' %}" class="btn borderless txt-small flex-item-no-shrink">
+      <img src="{% asset 'images/people.svg' %}" aria-label="People" width="19" height="19" class="colorize--black" alt="People">
+      <span class="for-screen-reader">Manage people</span>
+    </a>
+    <span class="flex-item-no-shrink">▸</span>
+    {{ user.name }}
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="panel margin-block-double shadow center">
+  <h2 class="margin-none-block-end">{{ user.name }}</h2>
+  <p class="margin-none-block-start"><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+
+  {% if current_user_admin %}
+    <hr class="full-width margin-block-double" aria-hidden="true">
+    {% include "sessions/transfers/_transfer.html" %}
+  {% endif %}
+</div>
+{% endblock %}

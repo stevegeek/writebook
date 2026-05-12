@@ -1,0 +1,59 @@
+{% extend "base.html" %}
+
+{% block title %}Manage access — {{ book.title }}{% endblock %}
+
+{% block header %}
+<nav>
+  <a href="{% url 'books:show' id: book.id %}" class="btn flex-item-justify-start">
+    <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Cancel and go back</span>
+  </a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'books:accesses' book_id: book.id %}" id="book-editor">
+  {% csrf_input %}
+
+  <div class="book-access border-radius center pad-double fill-shade flex flex-column gap margin-block-double">
+    <div class="flex align-center gap txt-medium--responsive">
+      <img src="{% asset 'images/eye.svg' %}" aria-hidden="true" width="36" height="36" class="colorize--black" alt="">
+
+      <div class="min-width">
+        <div class="overflow-ellipsis fill-shade"><strong>Everyone</strong></div>
+      </div>
+
+      <hr class="flex-item-grow margin-none" aria-hidden="true" style="--border-style: dashed">
+
+      <fieldset class="flex align-center gap borderless unpad margin-none">
+        <legend class="for-screen-reader">Grant read access to everyone</legend>
+        <label class="switch txt-medium">
+          {# Hidden 0 first so an unchecked checkbox still sends a value. #}
+          <input type="hidden" name="everyone_access" value="0">
+          <input type="checkbox"
+                 name="everyone_access"
+                 value="1"
+                 class="switch__input"
+                 {% if book.everyone_access %}checked{% endif %}>
+          <span class="switch__btn round"></span>
+          <span class="for-screen-reader">Grant read access to everyone</span>
+        </label>
+      </fieldset>
+    </div>
+
+    <hr class="full-width margin-block-start margin-block-end-half">
+
+    {% for user in users %}
+      {% include "books/accesses/_access.html" %}
+    {% endfor %}
+  </div>
+</form>
+{% endblock %}
+
+{% block footer %}
+<nav class="flex align-end justify-center pad">
+  <button type="submit" form="book-editor" class="new-book-btn btn btn--reversed center txt-medium--responsive" aria-label="Save changes" title="Save changes">
+    <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+  </button>
+</nav>
+{% endblock %}

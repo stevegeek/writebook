@@ -1,0 +1,82 @@
+{% extend "base.html" %}
+
+{# Single-revision view. Mirrors writebook-rails' pages/edits/show.html.erb.  #}
+{# Required context vars: leaf, book, edit, previous_edit, next_edit,         #}
+{# historical_html, current_html, edit_url.                                   #}
+
+{% block title %}Changes to {{ leaf.title }}{% endblock %}
+
+{% block header %}
+  <nav>
+    <a href="{{ edit_url }}" class="btn">
+      <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Go back</span>
+    </a>
+
+    <div class="breadcrumbs">
+      {% include "books/_index_link.html" %}
+      <span class="flex-item-no-shrink">&#9656;</span>
+      <a href="{% url 'books:show' id: book.id %}">{{ book.title }}</a>
+      <span class="flex-item-no-shrink">&#9656;</span>
+      <strong>{{ leaf.title }}</strong>
+    </div>
+  </nav>
+{% endblock %}
+
+{% block content %}
+<div class="library">
+  <section class="txt-align-start">
+    <turbo-frame id="previous_version">
+      <header class="flex align-center justify-center gap">
+        {% if previous_edit %}
+          <a href="{% url 'edits:show' leaf_id: leaf.id, id: previous_edit.id %}"
+             data-turbo-action="advance"
+             class="btn btn--reversed txt-small">
+            <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+            <span class="for-screen-reader">Previous version</span>
+          </a>
+        {% else %}
+          <span class="btn btn--reversed txt-small" aria-disabled="true">
+            <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+            <span class="for-screen-reader">Previous version</span>
+          </span>
+        {% endif %}
+
+        <h2 class="btn btn--reversed txt-medium margin-none overflow-ellipsis">
+          {{ edit.created_at|time:"%b %d, %Y %I:%M %p" }}
+        </h2>
+
+        {% if next_edit %}
+          <a href="{% url 'edits:show' leaf_id: leaf.id, id: next_edit.id %}"
+             data-turbo-action="advance"
+             class="btn btn--reversed txt-small">
+            <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+            <span class="for-screen-reader">Next version</span>
+          </a>
+        {% else %}
+          <span class="btn btn--reversed txt-small" aria-disabled="true">
+            <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+            <span class="for-screen-reader">Next version</span>
+          </span>
+        {% endif %}
+      </header>
+
+      <div class="page--page">
+        {{ historical_html|safe }}
+      </div>
+    </turbo-frame>
+  </section>
+
+  <section class="page-edit__current txt-align-start">
+    <header class="flex align-center gap justify-center">
+      <a href="{{ edit_url }}" class="btn btn--positive txt-medium center margin-none">
+        Current
+      </a>
+    </header>
+
+    <div class="page--page">
+      {{ current_html|safe }}
+    </div>
+  </section>
+</div>
+{% endblock %}

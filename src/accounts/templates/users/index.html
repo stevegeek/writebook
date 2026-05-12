@@ -1,0 +1,44 @@
+{% extend "base.html" %}
+
+{% block title %}People on the account{% endblock %}
+
+{% block header %}
+<nav>
+  <a href="{% url 'books:index' %}" class="btn">
+    <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Go back</span>
+  </a>
+
+  <div class="breadcrumbs">
+    <a href="{% url 'books:index' %}" class="btn borderless txt-small flex-item-no-shrink">
+      <img src="{% asset 'images/books.svg' %}" aria-hidden="true" width="19" height="19" class="colorize--black" alt="Library">
+      <span class="for-screen-reader">Library</span>
+    </a>
+    <span class="flex-item-no-shrink">▸</span>
+    <img src="{% asset 'images/settings.svg' %}" aria-label="Settings" width="19" height="19" class="colorize--black" alt="Settings">
+  </div>
+
+  {% if current_user_admin %}
+    <a href="{% url 'accounts:custom_styles_edit' %}" class="btn borderless txt-small flex-item-no-shrink">
+      <img src="{% asset 'images/art.svg' %}" aria-hidden="true" width="19" height="19" class="colorize--black" alt="">
+      <span class="for-screen-reader">Custom CSS</span>
+    </a>
+  {% endif %}
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="panel borderless center pad fill-shade flex flex-column margin-block">
+  {% include "users/_invite.html" %}
+</div>
+
+<div class="panel borderless center pad fill-none flex flex-column gap">
+  {% for user in users %}
+    {% include "users/_user.html" %}
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block footer %}
+<div class="txt-align-center center margin-block-double txt-subtle">Writebook&trade;</div>
+{% endblock %}

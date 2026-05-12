@@ -1,0 +1,74 @@
+{% extend "base.html" %}
+
+{% block title %}Your settings{% endblock %}
+
+{% block header %}
+<nav>
+  <a href="{% url 'accounts:users_index' %}" class="btn">
+    <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Go back</span>
+  </a>
+
+  <div class="breadcrumbs">
+    <a href="{% url 'books:index' %}" class="btn borderless txt-small flex-item-no-shrink">
+      <img src="{% asset 'images/books.svg' %}" aria-hidden="true" width="19" height="19" class="colorize--black" alt="Library">
+      <span class="for-screen-reader">Library</span>
+    </a>
+    <span class="flex-item-no-shrink">▸</span>
+    <a href="{% url 'accounts:users_index' %}" class="btn borderless txt-small flex-item-no-shrink">
+      <img src="{% asset 'images/people.svg' %}" aria-label="People" width="19" height="19" class="colorize--black" alt="People">
+      <span class="for-screen-reader">Manage people</span>
+    </a>
+    <span class="flex-item-no-shrink">▸</span>
+    {{ user.name }}
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="panel margin-block-double shadow center">
+  <form method="post" action="{{ form_action }}" class="flex flex-column gap">
+    {% csrf_input %}
+
+    <div class="flex align-center gap margin-block-start">
+      {% translation_button "user_name" %}
+      <label class="flex align-center gap input input--actor">
+        <input type="text" name="name" class="input full-width" autocomplete="name" placeholder="Name" autofocus required value="{{ user.name }}">
+        <img src="{% asset 'images/person.svg' %}" aria-hidden="true" width="30" height="30" class="colorize--black" alt="">
+      </label>
+    </div>
+    <div class="flex align-center gap">
+      {% translation_button "email_address" %}
+      <label class="flex align-center gap input input--actor">
+        <input type="email" name="email_address" class="input full-width" autocomplete="username" placeholder="Email address" required value="{{ user.email }}">
+        <img src="{% asset 'images/email.svg' %}" aria-hidden="true" width="30" height="30" class="colorize--black" alt="">
+      </label>
+    </div>
+    <div class="flex align-center gap">
+      {% translation_button "update_password" %}
+      <label class="flex align-center gap input input--actor">
+        <input type="password" name="password" class="input full-width" autocomplete="new-password" placeholder="Change password" maxlength="72">
+        <img src="{% asset 'images/password.svg' %}" aria-hidden="true" width="30" height="30" class="colorize--black" alt="">
+      </label>
+    </div>
+    <button type="submit" class="btn btn--reversed center">
+      <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Save changes</span>
+    </button>
+  </form>
+</div>
+
+<div class="panel margin-block-double shadow center">
+  {% include "sessions/transfers/_transfer.html" %}
+</div>
+
+<div class="panel margin-block-double shadow center">
+  <form method="post" action="{% url 'accounts:session_destroy' %}">
+    {% csrf_input %}
+    <button type="submit" class="btn center">
+      <img src="{% asset 'images/logout.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Sign out</span>
+    </button>
+  </form>
+</div>
+{% endblock %}

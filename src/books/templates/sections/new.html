@@ -1,0 +1,23 @@
+{% extend "base.html" %}
+
+{% block title %}New section page{% endblock %}
+
+{% block header %}
+  <nav>
+    <a href="{% url 'books:show' id: book.id %}" class="btn flex-item-justify-start">
+      <img src="{% asset 'images/remove.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Cancel</span>
+    </a>
+
+    <button type="submit" form="leafable-editor" class="btn flex-item-justify-end">
+      <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Save</span>
+    </button>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <div class="page--section">
+    {% include "sections/_form.html" %}
+  </div>
+{% endblock %}

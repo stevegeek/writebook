@@ -1,0 +1,43 @@
+{# Edit-page footer. Mirrors writebook-rails' leaves/_edit_footer.html.erb.    #}
+{# Required context: leaf, book. Optional: next_leaf (handler computes).        #}
+<nav class="book__nav flex align-center gap">
+  <span class="btn btn--placeholder flex-item-justify-start"></span>
+
+  {% if next_leaf %}
+    {% if next_leaf.leafable_type == "Books::Leafables::Picture" %}
+      <a href="{% url 'pictures:edit' id: next_leaf.id %}" class="btn txt-medium min-width">
+        <span class="overflow-ellipsis">Next: {{ next_leaf.title }}</span>
+        <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      </a>
+    {% elsif next_leaf.leafable_type == "Books::Leafables::Section" %}
+      <a href="{% url 'sections:edit' id: next_leaf.id %}" class="btn txt-medium min-width">
+        <span class="overflow-ellipsis">Next: {{ next_leaf.title }}</span>
+        <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      </a>
+    {% else %}
+      <a href="{% url 'pages:edit' id: next_leaf.id %}" class="btn txt-medium min-width">
+        <span class="overflow-ellipsis">Next: {{ next_leaf.title }}</span>
+        <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      </a>
+    {% endif %}
+  {% else %}
+    <a href="{% url 'books:show' id: leaf.book_id %}" class="btn txt-medium">
+      <span class="overflow-ellipsis">Table of contents</span>
+      <img src="{% asset 'images/arrow-reverse.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    </a>
+  {% endif %}
+
+  <span class="flex-item-justify-end">
+    <form method="post"
+          action="{% url 'books:leaf_delete' book_id: leaf.book_id, id: leaf.id %}"
+          class="leaf__delete">
+      {% csrf_input %}
+      <button type="submit"
+              class="btn btn--negative txt-small min-width"
+              data-turbo-confirm="Are you sure you want to delete this page?">
+        <img src="{% asset 'images/minus.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+        <span class="for-screen-reader">Delete {{ leaf.title }}</span>
+      </button>
+    </form>
+  </span>
+</nav>

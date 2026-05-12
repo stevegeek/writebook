@@ -1,0 +1,44 @@
+{% extend "base.html" %}
+
+{% block title %}Library | Writebook{% endblock %}
+
+{% block layout_class %}books{% endblock %}
+
+{% block header %}
+<nav>
+  <span class="btn btn--placeholder" aria-hidden="true"></span>
+
+  <a href="https://once.com/writebook" class="product__wordmark btn btn--plain txt-large center" target="_blank">
+    <img src="{% asset 'images/writebook-icon.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span>Writebook</span>
+  </a>
+
+  {% if signed_in %}
+    <a href="{% url 'accounts:users_index' %}" class="btn">
+      <img src="{% asset 'images/settings.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Manage people and settings</span>
+    </a>
+  {% else %}
+    <a href="{% url 'accounts:session_new' %}" class="btn">
+      <img src="{% asset 'images/login-keys.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Sign in</span>
+    </a>
+  {% endif %}
+</nav>
+{% endblock %}
+
+{% block content %}
+{# Rails wraps the index in `cache [@books, signed_in?]` and each card in `cache book`. #}
+{# Marten has no built-in fragment cache; rendering is fast enough without it. #}
+<div class="library">
+  {% for entry in book_entries %}
+    {% with book=entry.book, cover=entry.cover %}
+      {% include "books/_book.html" %}
+    {% endwith %}
+  {% endfor %}
+
+  {% if signed_in %}
+    {% include "books/_new.html" %}
+  {% endif %}
+</div>
+{% endblock %}

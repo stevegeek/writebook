@@ -1,0 +1,3 @@
+{# Turbo Stream response from PagesCreateHandler / SectionsCreateHandler /  #}
+{# PicturesCreateHandler. Mirrors writebook-rails leafables/create.turbo_stream.erb. #}
+{% turbo_stream "append" "leaves" partial: "leaves/_edit.html" locals: {leaf: leaf} %}

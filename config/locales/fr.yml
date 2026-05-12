@@ -1,0 +1,13 @@
+fr:
+  field_labels:
+    book_author: "Auteur"
+    book_subtitle: "Sous-titre"
+    book_title: "Titre du livre"
+    custom_styles: "Ajoutez des styles CSS personnalisés. Utilisez avec précaution : vous pourriez casser des choses."
+    email_address: "Entrez votre adresse courriel"
+    password: "Saisissez votre mot de passe"
+    picture_caption: "Légende de l'image"
+    transfer_session: "Partagez pour les reconnecter à leur compte"
+    transfer_session_self: "Lien pour se connecter automatiquement sur un autre appareil"
+    user_name: "Entrez votre nom"
+    update_password: "Changer le mot de passe"

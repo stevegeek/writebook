@@ -1,0 +1,14 @@
+.env
+.icr_*
+.vscode/
+.DS_Store
+*.db
+*.dwarf
+/.shards/
+/bin/
+/lib/
+/tmp/
+/media/
+
+# Per-machine override pinning marten + marten-cable to local checkouts.
+/shard.override.yml

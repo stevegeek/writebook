@@ -1,0 +1,38 @@
+{# Editing-history button. Ported from leaves/_history.html.erb.              #}
+{# Opens a modal dialog hosting a lazy-loading turbo-frame that fetches the   #}
+{# edits index for this leaf. Rails just links straight to `latest`; we use   #}
+{# a dialog so the popover can list every revision at once and link into the  #}
+{# show view per row (Rails-equivalent behavior is the show view's prev/next  #}
+{# nav, which we keep on edits/show.html).                                    #}
+{#                                                                            #}
+{# Required context: leaf, edits_count (Int set by handler).                  #}
+{% if edits_count %}
+  <div data-controller="dialog" data-action="keydown.esc->dialog#close">
+    <button type="button"
+            data-action="click->dialog#open"
+            class="btn flex-item-no-shrink txt-small"
+            title="Editing history">
+      <img src="{% asset 'images/history.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Editing history</span>
+    </button>
+
+    <dialog data-dialog-target="dialog" class="dialog panel shadow">
+      <form method="dialog">
+        <button class="btn panel__close" title="Close (esc)">
+          <img src="{% asset 'images/remove.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+          <span class="for-screen-reader">Close</span>
+        </button>
+      </form>
+
+      {# `src` triggers an eager fetch when the frame is added to the DOM —  #}
+      {# the dialog hosts the frame from page load, but the actual request   #}
+      {# only happens once the frame attribute is present, and Marten's      #}
+      {# dialog controller calls showModal() lazily on click.                #}
+      <turbo-frame id="history_{{ leaf.id }}"
+                   src="{% url 'edits:index' leaf_id: leaf.id %}"
+                   loading="lazy">
+        <p class="txt-tertiary pad">Loading revisions&#8230;</p>
+      </turbo-frame>
+    </dialog>
+  </div>
+{% endif %}

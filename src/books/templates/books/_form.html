@@ -1,0 +1,129 @@
+{# Book create/edit form. Used by new.html and edit.html. #}
+{# The form targets book-editor so the submit button can live in a footer block. #}
+<form method="post" id="book-editor" enctype="multipart/form-data"
+  action="{% if book.id %}{% url 'books:edit' id: book.id %}{% else %}{% url 'books:new' %}{% endif %}">
+  {% csrf_input %}
+
+  <div class="book__form flex align-center gap full-width {% if not cover %}theme--{{ book.theme }}{% endif %}" style="--input-padding: 0.5rem 1rem; --input-border-radius: 0.5rem">
+
+    <div class="flex gap-half">
+      <fieldset class="flex flex-column unpad margin-block-end borderless justify-space-between">
+        <legend class="for-screen-reader">Cover color</legend>
+
+        {# Book::THEMES = %w[black blue green magenta orange violet white] — static list #}
+        <label class="btn btn--circle txt-small" style="--btn-background: var(--theme-color--black)">
+          <input type="radio" name="theme" value="black" {% if schema.theme == "black" %}checked{% endif %}>
+          <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" class="checked" alt="">
+          <span class="for-screen-reader">black</span>
+        </label>
+        <label class="btn btn--circle txt-small" style="--btn-background: var(--theme-color--blue)">
+          <input type="radio" name="theme" value="blue" {% if schema.theme == "blue" %}checked{% endif %}>
+          <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" class="checked" alt="">
+          <span class="for-screen-reader">blue</span>
+        </label>
+        <label class="btn btn--circle txt-small" style="--btn-background: var(--theme-color--green)">
+          <input type="radio" name="theme" value="green" {% if schema.theme == "green" %}checked{% endif %}>
+          <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" class="checked" alt="">
+          <span class="for-screen-reader">green</span>
+        </label>
+        <label class="btn btn--circle txt-small" style="--btn-background: var(--theme-color--magenta)">
+          <input type="radio" name="theme" value="magenta" {% if schema.theme == "magenta" %}checked{% endif %}>
+          <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" class="checked" alt="">
+          <span class="for-screen-reader">magenta</span>
+        </label>
+        <label class="btn btn--circle txt-small" style="--btn-background: var(--theme-color--orange)">
+          <input type="radio" name="theme" value="orange" {% if schema.theme == "orange" %}checked{% endif %}>
+          <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" class="checked" alt="">
+          <span class="for-screen-reader">orange</span>
+        </label>
+        <label class="btn btn--circle txt-small" style="--btn-background: var(--theme-color--violet)">
+          <input type="radio" name="theme" value="violet" {% if schema.theme == "violet" %}checked{% endif %}>
+          <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" class="checked" alt="">
+          <span class="for-screen-reader">violet</span>
+        </label>
+        <label class="btn btn--circle txt-small" style="--btn-background: var(--theme-color--white)">
+          <input type="radio" name="theme" value="white" {% if schema.theme == "white" %}checked{% endif %}>
+          <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" class="checked" alt="">
+          <span class="for-screen-reader">white</span>
+        </label>
+      </fieldset>
+
+      <div class="flex flex-column" data-controller="upload-preview" data-upload-preview-default-image-value="{% asset 'images/empty-cover.png' %}">
+        <label class="align-center center gap position-relative margin-block-end">
+          {% if not cover %}
+            <span class="btn btn--reversed txt-medium book__cover--add">
+              <img src="{% asset 'images/camera.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+              <span class="for-screen-reader">Upload a cover</span>
+            </span>
+          {% endif %}
+          <div class="input--file">
+            <img src="{% if cover %}{{ cover.file.url }}{% else %}{% asset 'images/empty-cover.png' %}{% endif %}" alt="Book cover" class="book__cover margin-none" style="--cover-height: 60vh" data-upload-preview-target="image">
+            <input type="file" name="image" class="input" accept="image/png, image/jpeg, image/jpg, image/webp"
+              data-upload-preview-target="input" data-action="upload-preview#previewImage"
+              title="{% if cover %}Replace book cover{% else %}Upload book cover{% endif %}">
+          </div>
+        </label>
+
+        {% if cover %}
+          <label class="btn btn--negative txt-small center book__cover--remove" data-action="click->upload-preview#clear" data-upload-preview-target="button">
+            <img src="{% asset 'images/minus.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+            <input type="checkbox" name="remove_cover" value="true" style="display:none">
+            <span class="for-screen-reader">Remove cover image</span>
+          </label>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="flex flex-column gap full-width">
+      {% if schema.errors %}
+        <div class="txt-subtle margin-block-end">
+          {% for err in schema.errors %}<p>{{ err }}</p>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="flex align-center gap txt-medium">
+        <h1 class="txt-xx-large margin-none full-width">
+          <input type="text" name="title" value="{{ schema.title }}" required autofocus class="input" placeholder="Book title" autocomplete="off">
+        </h1>
+      </div>
+      <div class="flex align-center gap txt-medium">
+        <small class="txt-normal txt-large txt-tight-lines full-width">
+          <textarea name="subtitle" class="input" placeholder="Subtitle" autocomplete="off">{{ schema.subtitle }}</textarea>
+        </small>
+      </div>
+      <div class="flex align-center gap txt-medium">
+        <small class="txt-normal txt-large txt-tight-lines full-width">
+          <input type="text" name="author" value="{{ schema.author }}" class="input" placeholder="Author" autocomplete="off">
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <div class="book-access border-radius center pad-double fill-shade flex flex-column gap margin-block-double">
+    <div class="flex align-center gap txt-medium--responsive">
+      <img src="{% asset 'images/eye.svg' %}" aria-hidden="true" width="36" height="36" class="colorize--black" alt="">
+
+      <div class="min-width">
+        <div class="overflow-ellipsis fill-shade"><strong>Everyone</strong></div>
+      </div>
+
+      <hr class="flex-item-grow margin-none" aria-hidden="true" style="--border-style: dashed">
+
+      <label for="book_everyone_access" class="switch">
+        <input type="checkbox" id="book_everyone_access" name="everyone_access" class="switch__input book-access__switch" {% if book.everyone_access %}checked{% endif %}>
+        <span class="switch__btn"></span>
+        <span class="for-screen-reader">Only allow some people to read this book</span>
+      </label>
+    </div>
+
+    <hr class="full-width margin-block-start margin-block-end-half">
+
+    {% if users %}
+      {% for user in users %}
+        {% include "books/accesses/_access.html" %}
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <button type="submit" hidden>Save</button>
+</form>

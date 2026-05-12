@@ -1,0 +1,46 @@
+{# Publication switch UI for the book sidebar. Mirrors writebook-rails        #}
+{# app/views/books/publications/_publication.html.erb. Rendered inside the    #}
+{# `book_publication_<id>` turbo-frame on books/show.html and inside a        #}
+{# turbo-stream replace on POST /books/<id>/publication.                       #}
+<div class="book-publication flex flex-column gap margin-block-start pad {% if book.published %}fill-selected{% else %}fill-shade{% endif %} border-radius">
+  {% if editable %}
+    <div class="flex align-center justify-center gap-half center">
+      <img src="{% asset 'images/lock.svg' %}" aria-hidden="true" width="36" height="36" class="colorize--black" alt="">
+
+      {# `contents` attribute → `display: contents` (utilities.css). Without it the   #}
+      {# <form> generates its own block-level box and the lock/switch/globe icons    #}
+      {# stop being direct flex items, breaking horizontal alignment. Mirrors Rails' #}
+      {# `form_with html: { contents: true }`.                                       #}
+      <form contents method="post" action="{% url 'books:publication' id: book.id %}" data-controller="form" data-action="change->form#submit">
+        {% csrf_input %}
+        <label class="switch txt-medium">
+          <input type="hidden" name="published" value="0">
+          <input type="checkbox" name="published" value="1" class="switch__input" {% if book.published %}checked{% endif %}>
+          <span class="switch__btn round"></span>
+          <span class="for-screen-reader">Publish this book</span>
+        </label>
+      </form>
+
+      <img src="{% asset 'images/world.svg' %}" aria-hidden="true" width="36" height="36" class="colorize--black" alt="">
+    </div>
+  {% endif %}
+
+  {% if book.published %}
+    <div class="book-publication__url flex flex-column align-center gap txt-medium">
+      <label class="flex flex-column gap full-width txt-align-center">
+        <strong id="invite_label" class="invite-label for-screen-reader">Public link to this book</strong>
+        <input type="text" class="input fill-white" id="invite_url" value="{% url 'books:show' id: book.id %}" aria-labelledby="invite_label" readonly>
+      </label>
+
+      <div class="flex align-center gap">
+        <button type="button" class="btn" data-controller="clipboard" data-clipboard-source-value="#invite_url" data-action="clipboard#copy">
+          <img src="{% asset 'images/copy-paste.svg' %}" aria-hidden="true" width="24" height="24" class="colorize--black" alt="">
+          <span class="for-screen-reader">Copy public link</span>
+        </button>
+
+        {# TODO: QR code popover + web share button — assets exist, controllers TBD. #}
+        {# TODO: edit-link button (slug edit handler not yet ported).                #}
+      </div>
+    </div>
+  {% endif %}
+</div>

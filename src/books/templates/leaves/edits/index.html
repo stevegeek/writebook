@@ -1,0 +1,31 @@
+{# Editing-history index — list of all Edit rows for a single leaf. Rendered #}
+{# into the `history_<leaf_id>` turbo-frame opened by leaves/_history.html.   #}
+{# Context: leaf, book, edits (ordered most-recent first).                    #}
+{#                                                                            #}
+{# Rails has no analogous index template — the Rails history button links     #}
+{# straight to `latest` and the show view carries prev/next nav. Here we      #}
+{# host an explicit list so the popover can preview every revision and link   #}
+{# into the show view per row.                                                #}
+<turbo-frame id="history_{{ leaf.id }}">
+  <div class="panel pad txt-align-start">
+    <header class="flex align-center justify-center gap margin-block-end">
+      <h2 class="txt-medium margin-none">Revisions of {{ leaf.title }}</h2>
+    </header>
+
+    <ol class="margin-none list-style-none">
+      {% for edit in edits %}
+        <li class="flex align-center justify-between gap pad-block-half {% if !loop.last? %}border-block-end{% endif %}">
+          <a href="{% url 'edits:show' leaf_id: leaf.id, id: edit.id %}"
+             data-turbo-frame="_top"
+             class="btn btn--plain txt-small flex-item-grow txt-align-start">
+            <strong>{{ edit.created_at|time:"%b %d, %Y" }}</strong>
+            <span class="txt-tertiary">{{ edit.created_at|time:"%I:%M %p" }}</span>
+          </a>
+          <span class="txt-tertiary txt-small">{{ edit.event }}</span>
+        </li>
+      {% else %}
+        <li class="txt-tertiary txt-small pad-block-half">No revisions yet — edits are recorded after the first save.</li>
+      {% endfor %}
+    </ol>
+  </div>
+</turbo-frame>

@@ -1,0 +1,44 @@
+{% extend "base.html" %}
+
+{% block title %}{{ leaf.title }}{% endblock %}
+
+{% block header %}
+  {% include "leaves/_header.html" %}
+{% endblock %}
+
+{% block toolbar %}
+  {% if editable %}
+    <div class="flex flex-column">
+      <div class="page-toolbar fill-shade">
+        {% include "books/_edit_mode.html" with target_url=edit_url, checked=false %}
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block sidebar %}
+  {% include "leaves/_sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+  <figure class="page--picture flex flex-column align-center gap margin-none">
+    {% if attachment %}
+      <a href="{{ attachment.file.url }}"
+         data-action="lightbox#open:prevent"
+         data-lightbox-target="image"
+         data-lightbox-url-value="{{ attachment.file.url }}">
+        <img src="{{ attachment.file.url }}" loading="lazy" alt="{{ picture.caption }}">
+      </a>
+    {% else %}
+      <img src="{% asset 'images/default-picture.webp' %}" alt="No image uploaded" loading="lazy">
+    {% endif %}
+
+    <figcaption>
+      {{ picture.caption|linebreaks }}
+    </figcaption>
+  </figure>
+{% endblock %}
+
+{% block footer %}
+  {% include "leaves/_navigation.html" %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{# Per-leaf real-time "being edited by" indicator. Mirrors                     #}
+{# writebook-rails' leaves/_being_edited_indicator.html.erb.                   #}
+{#                                                                             #}
+{# - subscribes to a turbo-stream channel keyed off the leaf id +              #}
+{#   :being_edited so other viewers' update broadcasts append into the         #}
+{#   container below;                                                          #}
+{# - the empty <div> is the append target (id matches the broadcast's          #}
+{#   target id from leaves/_being_edited_by.turbo_stream.html).                #}
+{#                                                                             #}
+{# Required context: leaf.                                                     #}
+{# Note: MartenTurbo's stream-name verifier signs the (book/leaf,              #}
+{# being_edited) tuple as a single string — we precompute that on the          #}
+{# handler side and expose it here as `being_edited_stream`.                   #}
+{% turbo_stream_from being_edited_stream %}
+<div id="leaf_{{ leaf.id }}_being_edited" class="being-edited-indicator"></div>

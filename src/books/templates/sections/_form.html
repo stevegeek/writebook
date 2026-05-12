@@ -1,0 +1,40 @@
+{# Section form — used by both new.html and edit.html.                          #}
+{# Context vars: book (new), leaf + section (edit), schema                       #}
+{#                                                                               #}
+{# For edit: the title input is in leafables/_edit_header.html wired via         #}
+{#   form="leafable-editor". The form here only needs the body textarea.         #}
+{#                                                                               #}
+{# For new: title input is included inside this form directly.                   #}
+
+{% if leaf %}
+  {# edit path — title comes from the header nav input (form="leafable-editor") #}
+  <form method="post" action="{% url 'sections:edit' id: leaf.id %}" id="leafable-editor"
+        data-controller="autosave"
+        data-action="autosave#submit:prevent input@document->autosave#change"
+        data-autosave-clean-class="clean"
+        data-autosave-dirty-class="dirty"
+        data-autosave-saving-class="saving">
+    {% csrf_input %}
+    <h1>
+      <textarea name="body"
+                class="input input--textarea full-width txt-align-center"
+                required autocomplete="off" autofocus>{{ section.body }}</textarea>
+    </h1>
+    <button type="submit" hidden>Save</button>
+  </form>
+{% else %}
+  {# new path — title field lives in this form since there is no edit-header nav #}
+  <form method="post" action="{% url 'books:sections_new' book_id: book.id %}" id="leafable-editor">
+    {% csrf_input %}
+    <input type="text" name="title" required
+           placeholder="Section title"
+           class="input full-width margin-block"
+           autocomplete="off" autofocus>
+    <h1>
+      <textarea name="body"
+                class="input input--textarea full-width txt-align-center"
+                autocomplete="off"></textarea>
+    </h1>
+    <button type="submit" hidden>Save</button>
+  </form>
+{% endif %}

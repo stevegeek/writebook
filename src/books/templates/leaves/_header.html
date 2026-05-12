@@ -1,0 +1,61 @@
+{# Per-leaf navbar shared by page/section/picture show pages. Mirrors        #}
+{# writebook-rails' leaves/_header.html.erb (only the :header content_for —   #}
+{# the toolbar half is rendered separately by each show template).            #}
+{#                                                                            #}
+{# Required context vars: book, leaf.                                          #}
+{# The outer `<nav>` carries the reading-tracker controller (Rails             #}
+{# leaf_nav_tag helper) so client-side reading progress posts back as the      #}
+{# reader scrolls/dwells.                                                      #}
+<nav data-controller="reading-tracker"
+     data-reading-tracker-book-id-value="{{ leaf.book_id }}"
+     data-reading-tracker-leaf-id-value="{{ leaf.id }}">
+  {% include "leaves/_sidebar_toggle.html" %}
+
+  {# Previous leafable link — falls back to book TOC when first leaf. #}
+  {% if previous_leaf %}
+    {% if previous_leaf.leafable_type == "Books::Leafables::Picture" %}
+      <a href="{% url 'pictures:show' id: previous_leaf.id %}" class="btn"
+         data-controller="hotkey"
+         data-action="keydown.left@document->hotkey#click touch:swipe-left@window->hotkey#click">
+        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
+      </a>
+    {% elsif previous_leaf.leafable_type == "Books::Leafables::Section" %}
+      <a href="{% url 'sections:show' id: previous_leaf.id %}" class="btn"
+         data-controller="hotkey"
+         data-action="keydown.left@document->hotkey#click touch:swipe-left@window->hotkey#click">
+        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
+      </a>
+    {% else %}
+      <a href="{% url 'pages:show' id: previous_leaf.id %}" class="btn"
+         data-controller="hotkey"
+         data-action="keydown.left@document->hotkey#click touch:swipe-left@window->hotkey#click">
+        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
+      </a>
+    {% endif %}
+  {% else %}
+    <a href="{% url 'books:show' id: book.id %}" class="btn"
+       data-controller="hotkey"
+       data-action="keydown.left@document->hotkey#click touch:swipe-left@window->hotkey#click">
+      <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Table of contents: {{ book.title }}</span>
+    </a>
+  {% endif %}
+
+  <div class="breadcrumbs">
+    {% include "books/_index_link.html" %}
+    <span class="flex-item-no-shrink">&#9656;</span>
+    <a href="{% url 'books:show' id: book.id %}">{{ book.title }}</a>
+    <span class="flex-item-no-shrink">&#9656;</span>
+    <strong>{{ leaf.title }}</strong>
+  </div>
+
+  <button class="btn" data-action="fullscreen#toggle" data-fullscreen-target="button">
+    <img src="{% asset 'images/expand.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Enter fullscreen</span>
+  </button>
+
+  {% include "books/searches/_search.html" %}
+</nav>

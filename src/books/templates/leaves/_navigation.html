@@ -1,0 +1,43 @@
+{# Footer navigation for leaf show pages. Mirrors                              #}
+{# writebook-rails' leaves/_navigation.html.erb — note that Rails only         #}
+{# renders the next-leaf link in the footer; the previous-leaf link is in      #}
+{# the header. We follow the same shape here.                                  #}
+{#                                                                             #}
+{# Required context vars: leaf, book, next_leaf (nullable).                    #}
+<nav class="book__nav flex align-center gap justify-center">
+  {% if next_leaf %}
+    {% if next_leaf.leafable_type == "Books::Leafables::Picture" %}
+      <a href="{% url 'pictures:show' id: next_leaf.id %}"
+         class="btn txt-medium min-width"
+         data-controller="hotkey"
+         data-action="keydown.right@document->hotkey#click touch:swipe-right@window->hotkey#click">
+        <span class="overflow-ellipsis">Next: {{ next_leaf.title }}</span>
+        <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      </a>
+    {% elsif next_leaf.leafable_type == "Books::Leafables::Section" %}
+      <a href="{% url 'sections:show' id: next_leaf.id %}"
+         class="btn txt-medium min-width"
+         data-controller="hotkey"
+         data-action="keydown.right@document->hotkey#click touch:swipe-right@window->hotkey#click">
+        <span class="overflow-ellipsis">Next: {{ next_leaf.title }}</span>
+        <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      </a>
+    {% else %}
+      <a href="{% url 'pages:show' id: next_leaf.id %}"
+         class="btn txt-medium min-width"
+         data-controller="hotkey"
+         data-action="keydown.right@document->hotkey#click touch:swipe-right@window->hotkey#click">
+        <span class="overflow-ellipsis">Next: {{ next_leaf.title }}</span>
+        <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      </a>
+    {% endif %}
+  {% else %}
+    <a href="{% url 'books:show' id: book.id %}"
+       class="btn txt-medium"
+       data-controller="hotkey"
+       data-action="keydown.right@document->hotkey#click touch:swipe-right@window->hotkey#click">
+      <span class="overflow-ellipsis">Table of contents: {{ book.title }}</span>
+      <img src="{% asset 'images/arrow-reverse.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    </a>
+  {% endif %}
+</nav>

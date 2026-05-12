@@ -1,0 +1,45 @@
+{% extend "base.html" %}
+
+{% block title %}Sign in{% endblock %}
+
+{% block content %}
+<div class="panel shadow center margin-block-double {% if errors %}shake{% endif %}">
+  <img src="{% asset 'images/writebook-icon.svg' %}" class="product__logo center colorize--black" width="130" height="130" alt="">
+  <h1 class="margin-none-block-start margin-block-end-double">Writebook</h1>
+
+  {% if errors %}
+    <div class="margin-block-end-double txt-subtle">
+      {% for err in errors %}<p>{{ err }}</p>{% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" action="{% url 'accounts:session_create' %}" class="flex flex-column gap">
+    {% csrf_input %}
+
+    <div class="flex align-center gap">
+      {% translation_button "email_address" %}
+      <label class="flex align-center gap input input--actor txt-large">
+        <input type="email" name="email_address" required autofocus class="input full-width" autocomplete="username" placeholder="Enter your email address" value="{{ email_address|default:"" }}">
+        <img src="{% asset 'images/email.svg' %}" aria-hidden="true" width="30" height="30" class="colorize--black" alt="">
+      </label>
+    </div>
+
+    <div class="flex align-center gap">
+      {% translation_button "password" %}
+      <label class="flex align-center gap input input--actor txt-large">
+        <input type="password" name="password" required class="input full-width" autocomplete="current-password" placeholder="Enter your password" maxlength="72">
+        <img src="{% asset 'images/password.svg' %}" aria-hidden="true" width="30" height="30" class="colorize--black" alt="">
+      </label>
+    </div>
+
+    <button type="submit" id="log_in" class="btn btn--reversed center">
+      <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Sign in</span>
+    </button>
+  </form>
+</div>
+{% endblock %}
+
+{% block footer %}
+<div class="txt-align-center center margin-block-double txt-subtle">Writebook&trade; version <span class="product__version-badge">{{ app_version }}</span></div>
+{% endblock %}

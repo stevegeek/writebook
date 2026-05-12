@@ -1,0 +1,42 @@
+<house-md-toolbar id="house_toolbar" class="flex align-center gap-half">
+  <button type="button" title="Bold" data-house-md-action="bold" class="btn btn--plain">
+    <img src="{% asset 'images/text-bold.svg' %}" aria-hidden="true" width="16" height="16" alt="" class="colorize--black">
+    <span class="for-screen-reader">Text style: bold</span>
+  </button>
+
+  <button type="button" title="Italic" data-house-md-action="italic" class="btn btn--plain">
+    <img src="{% asset 'images/text-italic.svg' %}" aria-hidden="true" width="16" height="16" alt="" class="colorize--black">
+    <span class="for-screen-reader">Text style: italic</span>
+  </button>
+
+  <button type="button" title="Quote" data-house-md-action="quote" class="btn btn--plain">
+    <img src="{% asset 'images/text-quote.svg' %}" aria-hidden="true" width="18" height="18" alt="" class="colorize--black">
+    <span class="for-screen-reader">Text style: quote</span>
+  </button>
+
+  <button type="button" title="Code" data-house-md-action="code" class="btn btn--plain">
+    <img src="{% asset 'images/text-code.svg' %}" aria-hidden="true" width="18" height="18" alt="" class="colorize--black">
+    <span class="for-screen-reader">Text style: code</span>
+  </button>
+
+  <button type="button" title="Link" data-house-md-action="link" class="btn btn--plain">
+    <img src="{% asset 'images/text-link.svg' %}" aria-hidden="true" width="18" height="18" alt="" class="colorize--black">
+    <span class="for-screen-reader">Text style: link</span>
+  </button>
+
+  <button type="button" title="Bulleted list" data-house-md-action="bulletList" class="btn btn--plain">
+    <img src="{% asset 'images/text-bullets.svg' %}" aria-hidden="true" width="18" height="18" alt="" class="colorize--black">
+    <span class="for-screen-reader">Text style: bulleted list</span>
+  </button>
+
+  <button type="button" title="Numbered list" data-house-md-action="numberList" class="btn btn--plain">
+    <img src="{% asset 'images/text-numbers.svg' %}" aria-hidden="true" width="18" height="18" alt="" class="colorize--black">
+    <span class="for-screen-reader">Text style: numbered list</span>
+  </button>
+
+  <label title="Add image" class="btn btn--plain">
+    <input type="file" name="upload" data-house-md-toolbar-file-picker="true" multiple style="display: none;">
+    <img src="{% asset 'images/text-image.svg' %}" aria-hidden="true" width="18" height="18" alt="" class="colorize--black">
+    <span class="for-screen-reader">Add image</span>
+  </label>
+</house-md-toolbar>

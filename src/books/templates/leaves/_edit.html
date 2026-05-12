@@ -1,0 +1,53 @@
+{# TOC entry for a leaf in edit mode. Used on the sidebar TOC during editing.  #}
+{# Mirrors writebook-rails' leaves/_edit.html.erb                               #}
+<li class="flex min-width {% if leaf.leafable_type == 'Books::Leafables::Section' %}leaf--section{% endif %}">
+  <span class="btn btn--link arrangement__handle txt-small">
+    <img src="{% asset 'images/handle.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Move {{ leaf.title }}</span>
+  </span>
+
+  {# leaf thumbnail link — dispatch by type #}
+  {% if leaf.leafable_type == "Books::Leafables::Picture" %}
+    <a href="{% url 'pictures:show' id: leaf.id %}" class="toc__thumbnail" data-turbo-frame="_top">
+      {# TODO: picture thumbnail — requires attachment lookup in template context #}
+    </a>
+  {% else %}
+    <a href="{% url 'pages:show' id: leaf.id %}" class="toc__thumbnail" data-turbo-frame="_top">
+      {# TODO: page/section body thumbnail #}
+    </a>
+  {% endif %}
+
+  <div class="toc__title flex align-center min-width">
+    <form method="post"
+          {% if leaf.leafable_type == "Books::Leafables::Picture" %}
+          action="{% url 'pictures:edit' id: leaf.id %}"
+          {% elsif leaf.leafable_type == "Books::Leafables::Section" %}
+          action="{% url 'sections:edit' id: leaf.id %}"
+          {% else %}
+          action="{% url 'pages:edit' id: leaf.id %}"
+          {% endif %}
+          class="flex align-center max-width min-width"
+          id="leaf_{{ leaf.id }}_form">
+      {% csrf_input %}
+      <input type="text" name="title" value="{{ leaf.title }}"
+             class="input full-width" autofocus autocomplete="off"
+             data-controller="autoselect">
+    </form>
+
+    <span class="flex align-center gap-half">
+      <button type="submit" class="btn txt-small btn--positive" form="leaf_{{ leaf.id }}_form">
+        <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+        <span class="for-screen-reader">Save</span>
+      </button>
+
+      {% include "leaves/_delete.html" %}
+    </span>
+  </div>
+
+  {# word count — pages only #}
+  {% if leaf.leafable_type == "Books::Leafables::Page" %}
+    <small class="toc__wordcount">
+      {# TODO: word count helper #}
+    </small>
+  {% endif %}
+</li>

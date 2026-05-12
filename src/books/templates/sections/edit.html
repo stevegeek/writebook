@@ -1,0 +1,51 @@
+{% extend "base.html" %}
+
+{% block title %}Edit {{ leaf.title }}{% endblock %}
+
+{% block header %}
+  {% include "leafables/_edit_header.html" %}
+{% endblock %}
+
+{% block toolbar %}
+  <div class="page-toolbar fill-selected align-center gap-half margin-block-end-double">
+    {% if editable %}
+      {% include "books/_edit_mode.html" with target_url=show_url, checked=true %}
+    {% endif %}
+
+    <span class="separator margin-inline-half" aria-hidden="true"></span>
+
+    <label class="btn txt-small">
+      {# Hidden empty value so unchecked sends "" (light) — Rails pattern preserved.   #}
+      {# The input name is `theme` (not section[theme]) because SectionSchema fields    #}
+      {# live at the top level of the form payload, not nested under a model key.       #}
+      <input type="hidden" name="theme" value="" form="leafable-editor">
+      <input type="checkbox" name="theme" value="dark"
+             {% if section.theme == "dark" %}checked{% endif %}
+             class="switch__input" form="leafable-editor">
+      <img src="{% asset 'images/theme-switch.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Change theme</span>
+    </label>
+
+    <span class="separator margin-inline-half" aria-hidden="true"></span>
+
+    {% include "leaves/_history.html" %}
+
+    <button type="submit" form="leafable-editor" class="btn flex page-toolbar__save flex-item-justify-end flex-item-no-shrink txt-small">
+      <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Save</span>
+    </button>
+  </div>
+{% endblock %}
+
+{% block sidebar %}
+  {% include "leaves/_sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+  <div class="page--section {% if section.theme == "dark" %}theme--dark{% endif %}">
+    {% include "leaves/_being_edited_indicator.html" %}
+    {% include "sections/_form.html" %}
+  </div>
+{% endblock %}
+
+{% block footer %}{% include "leaves/_edit_footer.html" %}{% endblock %}

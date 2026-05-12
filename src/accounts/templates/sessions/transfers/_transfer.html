@@ -1,0 +1,65 @@
+{# Mirrors Rails app/views/users/_transfer.html.erb. Caller injects:
+   - `transfer_url`   : signed URL to /session/transfer/<token>
+   - `transfer_other` : optional. truthy ONLY when an admin is viewing
+                        another user's transfer link (changes the label +
+                        translation key). When absent (today's only caller
+                        is /profile, always self), the self labels render.
+   - `transfer_token` : optional. raw token for the QR-code endpoint. When
+                        absent the QR dialog is hidden (Rails always shows
+                        it; Marten gates on the caller having generated it).
+#}
+<div class="flex flex-column align-center gap txt-medium--responsive">
+  <label class="flex flex-column gap full-width">
+    <div class="flex align-center gap">
+      {% if transfer_other %}
+        {% translation_button "transfer_session" %}
+        <strong id="session_transfer_label" class="txt-align-start">Share to get them back into their account</strong>
+      {% else %}
+        {% translation_button "transfer_session_self" %}
+        <strong id="session_transfer_label" class="txt-align-start">Link to automatically log in on another device</strong>
+      {% endif %}
+    </div>
+    <span class="flex align-center gap margin-inline">
+      <input type="text" class="input fill-white" id="session_transfer_url" value="{{ transfer_url }}" aria-labelledby="session_transfer_label" readonly>
+    </span>
+  </label>
+
+  <div class="flex align-center gap">
+    {% if transfer_token %}
+    <div data-controller="dialog" class="flex-inline">
+      <button type="button" class="btn" data-action="dialog#open">
+        <img src="{% asset 'images/qr-code.svg' %}" aria-hidden="true" width="24" height="24" class="colorize--black" alt="">
+        <span class="for-screen-reader">Show auto-login QR code</span>
+      </button>
+
+      <dialog class="dialog panel shadow" data-dialog-target="dialog">
+        <div class="qr-code pad txt-align-center">
+          <img src="{% url 'accounts:transfer_qr' token: transfer_token %}" alt="QR code for sign-in link" width="200" height="200">
+        </div>
+
+        <form method="dialog" class="flex justify-center">
+          <button class="btn panel__close" title="Close (esc)">
+            <img src="{% asset 'images/remove.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+            <span class="for-screen-reader">Close (esc)</span>
+          </button>
+        </form>
+      </dialog>
+    </div>
+    {% endif %}
+
+    <button class="btn" data-controller="copy-to-clipboard" data-copy-to-clipboard-text-value="{{ transfer_url }}">
+      <img src="{% asset 'images/copy-paste.svg' %}" aria-hidden="true" width="24" height="24" class="colorize--black" alt="">
+      <span class="for-screen-reader">Copy auto-login link</span>
+    </button>
+
+    <button type="button" class="btn"
+            data-controller="web-share"
+            data-web-share-url-value="{{ transfer_url }}"
+            data-web-share-title-value="Your sign-in link"
+            data-web-share-text-value="This is your own private sign-in URL, DO NOT SHARE IT. Use it to sign-in on another device or if you get locked out."
+            data-action="web-share#share">
+      <img src="{% asset 'images/share.svg' %}" aria-hidden="true" width="24" height="24" class="colorize--black" alt="">
+      <span class="for-screen-reader">Share auto-login link</span>
+    </button>
+  </div>
+</div>

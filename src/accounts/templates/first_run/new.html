@@ -1,0 +1,49 @@
+{% extend "base.html" %}
+
+{% block title %}Set up Writebook{% endblock %}
+
+{% block content %}
+<div class="panel shadow center margin-block-double {% if errors %}shake{% endif %}">
+  <img src="{% asset 'images/writebook-icon.svg' %}" class="product__logo center colorize--black" width="130" height="130" alt="">
+  <h1 class="margin-none-block-start margin-block-end-double">Writebook</h1>
+
+  {% if errors %}
+    <div class="margin-block-end-double txt-subtle">
+      {% for err in errors %}<p>{{ err }}</p>{% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" action="{% url 'accounts:first_run_create' %}" class="flex flex-column gap">
+    {% csrf_input %}
+
+    <div class="flex align-center gap">
+      {% translation_button "user_name" %}
+      <label class="flex align-center gap input input--actor txt-large">
+        <input type="text" name="name" class="input full-width" autocomplete="name" placeholder="Name" autofocus required data-1p-ignore>
+        <img src="{% asset 'images/person.svg' %}" aria-hidden="true" width="30" height="30" class="colorize--black" alt="">
+      </label>
+    </div>
+
+    <div class="flex align-center gap">
+      {% translation_button "email_address" %}
+      <label class="flex align-center gap input input--actor txt-large">
+        <input type="email" name="email_address" class="input full-width" autocomplete="username" placeholder="Email address" required>
+        <img src="{% asset 'images/email.svg' %}" aria-hidden="true" width="30" height="30" class="colorize--black" alt="">
+      </label>
+    </div>
+
+    <div class="flex align-center gap">
+      {% translation_button "password" %}
+      <label class="flex align-center gap input input--actor txt-large">
+        <input type="password" name="password" class="input full-width" autocomplete="new-password" placeholder="Password" required maxlength="72">
+        <img src="{% asset 'images/password.svg' %}" aria-hidden="true" width="30" height="30" class="colorize--black" alt="">
+      </label>
+    </div>
+
+    <button type="submit" id="log_in" class="btn btn--reversed center">
+      <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Create your account</span>
+    </button>
+  </form>
+</div>
+{% endblock %}

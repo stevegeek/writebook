@@ -1,0 +1,54 @@
+{# Sidebar table of contents for leaf show pages. Rendered via {% block sidebar %}. #}
+{# book + leaves must be in context (set by leaf show handlers).                  #}
+{# `editable` (Bool) — falls back to false when not provided so reading-only       #}
+{# views (anonymous, non-editor signed-in users) only see the show links.          #}
+<menu class="sidebar__content toc flex flex-column">
+  <header>
+    <h1 class="txt-large--responsive margin-none">
+      {{ book.title }}
+    </h1>
+  </header>
+
+  {% for leaf in leaves %}
+    <li class="flex min-width{% if leaf.leafable_type == 'Books::Leafables::Section' %} leaf--section{% endif %}">
+      {% if editable %}
+        {% if leaf.leafable_type == "Books::Leafables::Picture" %}
+          <a href="{% url 'pictures:edit' id: leaf.id %}" class="toc__title hide_from_reading_mode min-width" data-turbo-frame="_top">
+            <span class="overflow-ellipsis">{{ leaf.title }}</span>
+          </a>
+          <a href="{% url 'pictures:show' id: leaf.id %}" class="toc__title hide_from_edit_mode min-width" data-turbo-frame="_top">
+            <span class="overflow-ellipsis">{{ leaf.title }}</span>
+          </a>
+        {% elsif leaf.leafable_type == "Books::Leafables::Section" %}
+          <a href="{% url 'sections:edit' id: leaf.id %}" class="toc__title hide_from_reading_mode min-width" data-turbo-frame="_top">
+            <span class="overflow-ellipsis">{{ leaf.title }}</span>
+          </a>
+          <a href="{% url 'sections:show' id: leaf.id %}" class="toc__title hide_from_edit_mode min-width" data-turbo-frame="_top">
+            <span class="overflow-ellipsis">{{ leaf.title }}</span>
+          </a>
+        {% else %}
+          <a href="{% url 'pages:edit' id: leaf.id %}" class="toc__title hide_from_reading_mode min-width" data-turbo-frame="_top">
+            <span class="overflow-ellipsis">{{ leaf.title }}</span>
+          </a>
+          <a href="{% url 'pages:show' id: leaf.id %}" class="toc__title hide_from_edit_mode min-width" data-turbo-frame="_top">
+            <span class="overflow-ellipsis">{{ leaf.title }}</span>
+          </a>
+        {% endif %}
+      {% else %}
+        {% if leaf.leafable_type == "Books::Leafables::Picture" %}
+          <a href="{% url 'pictures:show' id: leaf.id %}" class="toc__title min-width" data-turbo-frame="_top">
+            <span class="overflow-ellipsis">{{ leaf.title }}</span>
+          </a>
+        {% elsif leaf.leafable_type == "Books::Leafables::Section" %}
+          <a href="{% url 'sections:show' id: leaf.id %}" class="toc__title min-width" data-turbo-frame="_top">
+            <span class="overflow-ellipsis">{{ leaf.title }}</span>
+          </a>
+        {% else %}
+          <a href="{% url 'pages:show' id: leaf.id %}" class="toc__title min-width" data-turbo-frame="_top">
+            <span class="overflow-ellipsis">{{ leaf.title }}</span>
+          </a>
+        {% endif %}
+      {% endif %}
+    </li>
+  {% endfor %}
+</menu>

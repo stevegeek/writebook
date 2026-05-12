@@ -1,0 +1,13 @@
+hi:
+  field_labels:
+    book_author: "लेखक"
+    book_subtitle: "उपशीर्षक"
+    book_title: "पुस्तक का शीर्षक"
+    custom_styles: "कस्टम CSS स्टाइल जोड़ें। सावधानी बरतें: आप चीज़ों को तोड़ सकते हैं।"
+    email_address: "अपना ईमेल पता दर्ज करें"
+    password: "अपना पासवर्ड दर्ज करें"
+    picture_caption: "चित्र का कैप्शन"
+    transfer_session: "उन्हें उनके खाते में वापस लाने के लिए साझा करें"
+    transfer_session_self: "किसी अन्य डिवाइस पर स्वचालित रूप से लॉग इन करने के लिए लिंक"
+    user_name: "अपना नाम दर्ज करें"
+    update_password: "पासवर्ड बदलें"

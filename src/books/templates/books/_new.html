@@ -1,0 +1,13 @@
+{# Empty placeholder card with "+" link to /books/new. Only rendered when signed in. #}
+<figure class="library__book position-relative">
+  <div class="library__book--empty center">
+    <img src="{% asset 'images/empty-cover.png' %}" alt="Book cover" class="book__cover">
+    <span class="btn btn--positive center">
+      <img src="{% asset 'images/add.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader"></span>
+    </span>
+  </div>
+  <a href="{% url 'books:new' %}" class="bookmark__link">
+    <span class="for-screen-reader">Create a new book</span>
+  </a>
+</figure>

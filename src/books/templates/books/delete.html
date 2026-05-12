@@ -1,0 +1,30 @@
+{% extend "base.html" %}
+
+{% block title %}Delete {{ book.title }}{% endblock %}
+
+{% block header %}
+<nav>
+  <a href="{% url 'books:edit' id: book.id %}" class="btn flex-item-justify-start">
+    <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Cancel and go back</span>
+  </a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="panel shadow center margin-block-double">
+  <h1 class="margin-none-block-start margin-block-end">Delete book</h1>
+  <p class="txt-subtle">Are you sure you want to delete <strong>{{ book.title }}</strong>? This cannot be undone.</p>
+
+  <form method="post" action="{% url 'books:delete' id: book.id %}" class="flex justify-center gap margin-block-double">
+    {% csrf_input %}
+    <a href="{% url 'books:edit' id: book.id %}" class="btn">
+      <span>Cancel</span>
+    </a>
+    <button type="submit" class="btn btn--negative">
+      <img src="{% asset 'images/trash.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span>Yes, delete this book</span>
+    </button>
+  </form>
+</div>
+{% endblock %}

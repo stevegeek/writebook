@@ -1,0 +1,117 @@
+{# TOC leaf item in books/show. Rendered via {% for leaf in leaves %}{% include "leaves/_leaf.html" %}{% endfor %}. #}
+{# Mirrors Rails app/views/leaves/_leaf.html.erb. #}
+<li class="arrangement__item toc__leaf {% if leaf.page %}toc__leaf--page{% elsif leaf.section %}toc__leaf--section{% elsif leaf.picture %}toc__leaf--picture{% endif %}" id="leaf_{{ leaf.id }}" data-id="{{ leaf.id }}" data-arrangement-target="item">
+
+  <span class="btn btn--link arrangement__handle txt-small">
+    <img src="{% asset 'images/handle.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Move {{ leaf.title }}</span>
+  </span>
+
+  {% if editable %}
+    {% include "leaves/_delete.html" %}
+  {% endif %}
+
+  <div class="toc__thumbnail {% if leaf.section %}{% if leaf.section.theme == 'dark' %}toc__thumbnail--dark{% endif %}{% endif %}">
+    {% if editable %}
+      {# edit-mode link #}
+      {% if leaf.picture %}
+        <a href="{% url 'pictures:edit' id: leaf.id %}" class="toc__link hide_from_reading_mode" data-turbo-frame="_top">
+          <span class="for-screen-reader">Edit {{ leaf.title }}</span>
+        </a>
+        <a href="{% url 'pictures:show' id: leaf.id %}" class="toc__link hide_from_edit_mode" data-turbo-frame="_top">
+          <span class="for-screen-reader">Open {{ leaf.title }}</span>
+        </a>
+      {% elsif leaf.section %}
+        <a href="{% url 'sections:edit' id: leaf.id %}" class="toc__link hide_from_reading_mode" data-turbo-frame="_top">
+          <span class="for-screen-reader">Edit {{ leaf.title }}</span>
+        </a>
+        <a href="{% url 'sections:show' id: leaf.id %}" class="toc__link hide_from_edit_mode" data-turbo-frame="_top">
+          <span class="for-screen-reader">Open {{ leaf.title }}</span>
+        </a>
+      {% else %}
+        <a href="{% url 'pages:edit' id: leaf.id %}" class="toc__link hide_from_reading_mode" data-turbo-frame="_top">
+          <span class="for-screen-reader">Edit {{ leaf.title }}</span>
+        </a>
+        <a href="{% url 'pages:show' id: leaf.id %}" class="toc__link hide_from_edit_mode" data-turbo-frame="_top">
+          <span class="for-screen-reader">Open {{ leaf.title }}</span>
+        </a>
+      {% endif %}
+    {% else %}
+      {% if leaf.picture %}
+        <a href="{% url 'pictures:show' id: leaf.id %}" class="toc__link" data-turbo-frame="_top">
+          <span class="for-screen-reader">Open {{ leaf.title }}</span>
+        </a>
+      {% elsif leaf.section %}
+        <a href="{% url 'sections:show' id: leaf.id %}" class="toc__link" data-turbo-frame="_top">
+          <span class="for-screen-reader">Open {{ leaf.title }}</span>
+        </a>
+      {% else %}
+        <a href="{% url 'pages:show' id: leaf.id %}" class="toc__link" data-turbo-frame="_top">
+          <span class="for-screen-reader">Open {{ leaf.title }}</span>
+        </a>
+      {% endif %}
+    {% endif %}
+
+    {# Body preview: section -> formatted body, page -> truncated rendered HTML, picture -> thumbnail. #}
+    {% if leaf.section %}
+      <span class="txt-align-center">{{ leaf.section.body_html|safe }}</span>
+    {% endif %}
+
+    {% if leaf.page %}
+      {{ leaf.page.html_preview|safe }}
+    {% endif %}
+
+    {% if leaf.picture %}
+      <img src="{% asset 'images/default-picture.webp' %}" alt="">
+    {% endif %}
+  </div>
+
+  {% if editable %}
+    {% if leaf.picture %}
+      <a href="{% url 'pictures:edit' id: leaf.id %}" class="toc__title min-width hide_from_reading_mode" data-turbo-frame="_top">
+        <span class="overflow-ellipsis">{{ leaf.title }}</span>
+      </a>
+      <a href="{% url 'pictures:show' id: leaf.id %}" class="toc__title min-width hide_from_edit_mode" data-turbo-frame="_top">
+        <span class="overflow-ellipsis">{{ leaf.title }}</span>
+      </a>
+    {% elsif leaf.section %}
+      <a href="{% url 'sections:edit' id: leaf.id %}" class="toc__title min-width hide_from_reading_mode" data-turbo-frame="_top">
+        <span class="overflow-ellipsis">{{ leaf.title }}</span>
+      </a>
+      <a href="{% url 'sections:show' id: leaf.id %}" class="toc__title min-width hide_from_edit_mode" data-turbo-frame="_top">
+        <span class="overflow-ellipsis">{{ leaf.title }}</span>
+      </a>
+    {% else %}
+      <a href="{% url 'pages:edit' id: leaf.id %}" class="toc__title min-width hide_from_reading_mode" data-turbo-frame="_top">
+        <span class="overflow-ellipsis">{{ leaf.title }}</span>
+      </a>
+      <a href="{% url 'pages:show' id: leaf.id %}" class="toc__title min-width hide_from_edit_mode" data-turbo-frame="_top">
+        <span class="overflow-ellipsis">{{ leaf.title }}</span>
+      </a>
+    {% endif %}
+  {% else %}
+    {% if leaf.picture %}
+      <a href="{% url 'pictures:show' id: leaf.id %}" class="toc__title min-width" data-turbo-frame="_top">
+        <span class="overflow-ellipsis">{{ leaf.title }}</span>
+      </a>
+    {% elsif leaf.section %}
+      <a href="{% url 'sections:show' id: leaf.id %}" class="toc__title min-width" data-turbo-frame="_top">
+        <span class="overflow-ellipsis">{{ leaf.title }}</span>
+      </a>
+    {% else %}
+      <a href="{% url 'pages:show' id: leaf.id %}" class="toc__title min-width" data-turbo-frame="_top">
+        <span class="overflow-ellipsis">{{ leaf.title }}</span>
+      </a>
+    {% endif %}
+  {% endif %}
+
+  <span class="toc__bookmark">
+    <svg viewBox="0 0 64 64" width="64px" height="64px" xmlns="http://www.w3.org/2000/svg">
+      <path d="m17.01 54.01v-42.98.00000045c-.00000025-1.65685 1.34315-3 3-3h24-.00000013c1.65685-.00000007 3 1.34315 3 3v42.98.0001206c0 1.10457-.895431 2-2 2-.34994 0-.693756-.0918173-.997105-.266281l-11.5039-6.61564c-.308638-.17748-.688362-.17748-.997 0l-11.5046 6.6153.00000011-.00000006c-.957413.550849-2.1801.221264-2.73095-.736149-.174564-.303405-.266442-.647312-.266451-.997351z" fill-rule="evenodd" fill="var(--color-marker)" />
+    </svg>
+  </span>
+
+  <small class="toc__wordcount txt-small--responsive">
+    {% if leaf.page %}{{ leaf.page.word_count }} words{% endif %}
+  </small>
+</li>

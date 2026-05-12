@@ -1,0 +1,47 @@
+{% extend "base.html" %}
+
+{% block title %}{{ leaf.title }}{% endblock %}
+
+{% block head %}
+<link rel="alternate" type="text/markdown" href="{% url 'pages:markdown' id: leaf.id %}">
+{% endblock %}
+
+{% block header %}
+  {% include "leaves/_header.html" %}
+{% endblock %}
+
+{% block toolbar %}
+  {% if editable %}
+    <div class="flex flex-column">
+      <div class="page-toolbar fill-shade">
+        {% include "books/_edit_mode.html" with target_url=edit_url, checked=false %}
+      </div>
+      {# Search-highlight banner placeholder — populated when arriving via    #}
+      {# /books/<id>/search?q=… (handler doesn't set @search yet, so this     #}
+      {# block is inert today). Mirrors books/searches/_banner partial.       #}
+      {% if search %}
+        <div class="search__banner flex-inline align-center gap-half txt-medium--responsive">
+          <span>Highlighted: <strong>{{ search }}</strong></span>
+          <a href="{% url 'pages:show' id: leaf.id %}" class="btn txt-small borderless">
+            <img src="{% asset 'images/remove.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+            <span class="for-screen-reader">Clear highlights</span>
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block sidebar %}
+  {% include "leaves/_sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+  <div class="page--page" data-controller="scroll-to-highlight">
+    {{ rendered_html|safe }}
+  </div>
+{% endblock %}
+
+{% block footer %}
+  {% include "leaves/_navigation.html" %}
+{% endblock %}

@@ -1,0 +1,44 @@
+<div class="flex align-center gap-half pad-inline txt-medium--responsive">
+  <strong class="overflow-ellipsis txt-medium--responsive">
+    {# Mirrors Rails' `link_to user.name, user_profile_path(user)`. Both    #}
+    {# self and other-user rows route through the per-user profile show;   #}
+    {# the handler enforces admin-or-self and 403s otherwise. Non-admins   #}
+    {# still see the link for their own row (it'll resolve to themselves). #}
+    {% if user.id == current_user_id %}
+      <a href="{% url 'accounts:profile_show_user' id: user.id %}">{{ user.name }}</a>
+    {% else %}{% if current_user_admin %}
+      <a href="{% url 'accounts:profile_show_user' id: user.id %}">{{ user.name }}</a>
+    {% else %}
+      {{ user.name }}
+    {% endif %}{% endif %}
+  </strong>
+  <hr class="flex-item-grow margin-none" aria-hidden="true">
+
+  <form method="post" action="{% url 'accounts:users_update' id: user.id %}" data-controller="form">
+    {% csrf_input %}
+    <label class="btn btn--small flex-item-no-shrink" for="user_{{ user.id }}_role">
+      <span class="for-screen-reader">{{ user.name }}'s role: {% if user.role == "administrator" %}Administrator{% else %}Member{% endif %}</span>
+      <img src="{% asset 'images/crown.svg' %}" width="24" height="24" aria-hidden="true" alt="">
+      {# Self-edits and non-admins both disable the toggle (mirrors Rails' disabled: user.current? || !Current.user.can_administer?). #}
+      <input type="checkbox"
+             name="role"
+             value="administrator"
+             id="user_{{ user.id }}_role"
+             data-action="form#submit"
+             {% if user.role == "administrator" %}checked{% endif %}
+             {% if user.id == current_user_id %}disabled{% else %}{% if current_user_admin %}{% else %}disabled{% endif %}{% endif %}>
+    </label>
+  </form>
+
+  <form method="post" action="{% url 'accounts:users_delete' id: user.id %}">
+    {% csrf_input %}
+    {# Disable delete on self or for non-admins (mirrors Rails). #}
+    <button type="submit"
+            class="btn btn--small btn--negative flex-item-no-shrink"
+            {% if user.id == current_user_id %}disabled{% else %}{% if current_user_admin %}{% else %}disabled{% endif %}{% endif %}
+            data-turbo-confirm="Are you sure you want to permanently remove this person from the account? This can&#39;t be undone.">
+      <img src="{% asset 'images/minus.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Remove {{ user.name }} from the account</span>
+    </button>
+  </form>
+</div>

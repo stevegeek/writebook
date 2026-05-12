@@ -1,0 +1,45 @@
+{# Result page returned after submitting the search form. Renders the results partial inline. #}
+{% extend "base.html" %}
+
+{% block title %}Search — {{ book.title }}{% endblock %}
+
+{% block layout_class %}book{% endblock %}
+
+{% block header %}
+<nav class="book__navbar">
+  <a href="{% url 'books:show' id: book.id %}" class="btn">
+    <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Back to {{ book.title }}</span>
+  </a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<turbo-frame id="search">
+  <form method="get" action="{% url 'books:search' book_id: book.id %}" id="search_form"></form>
+
+  <div class="search__results flex flex-column margin-block-start">
+    {% for result in results %}
+      {# show-link dispatch by concrete leafable type. Sections have no
+         public show route; anchor into the book TOC instead. Pictures
+         are never indexed (no searchable_content), so the picture branch
+         is defensive only. #}
+      {% if result.leaf.picture %}
+        <a href="{% url 'pictures:show' id: result.leaf.id %}" class="search__result txt-ink" data-turbo-frame="_top">
+          <strong>{{ result.title_match|safe }}:</strong> {{ result.content_match|safe }}
+        </a>
+      {% elsif result.leaf.section %}
+        <a href="{% url 'books:show' id: book.id %}#leaf_{{ result.leaf.id }}" class="search__result txt-ink" data-turbo-frame="_top">
+          <strong>{{ result.title_match|safe }}:</strong> {{ result.content_match|safe }}
+        </a>
+      {% else %}
+        <a href="{% url 'pages:show' id: result.leaf.id %}" class="search__result txt-ink" data-turbo-frame="_top">
+          <strong>{{ result.title_match|safe }}:</strong> {{ result.content_match|safe }}
+        </a>
+      {% endif %}
+    {% else %}
+      <p class="search__no_matches txt-align-center">No matches.</p>
+    {% endfor %}
+  </div>
+</turbo-frame>
+{% endblock %}

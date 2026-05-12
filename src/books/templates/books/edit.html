@@ -1,0 +1,31 @@
+{% extend "base.html" %}
+
+{% block title %}Edit {{ book.title }}{% endblock %}
+
+{% block header %}
+<nav>
+  <a href="{% url 'books:show' id: book.id %}" class="btn flex-item-justify-start">
+    <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Cancel and go back</span>
+  </a>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "books/_form.html" %}
+{% endblock %}
+
+{% block footer %}
+<nav class="flex align-end justify-center pad">
+  <form method="post" action="{% url 'books:delete' id: book.id %}">
+    {% csrf_input %}
+    <button type="submit" class="btn btn--negative">
+      <img src="{% asset 'images/trash.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Delete {{ book.title }}</span>
+    </button>
+  </form>
+  <button type="submit" form="book-editor" class="new-book-btn btn btn--reversed center txt-medium--responsive" aria-label="Save changes" title="Save changes">
+    <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+  </button>
+</nav>
+{% endblock %}

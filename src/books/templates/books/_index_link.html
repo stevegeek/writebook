@@ -1,0 +1,5 @@
+{# Reusable "back to library" button. Mirrors writebook-rails' _index_link.html.erb. #}
+<a href="{% url 'books:index' %}" class="btn borderless txt-small flex-item-no-shrink">
+  <img src="{% asset 'images/books.svg' %}" aria-label="Books" width="19" height="19" class="colorize--black" alt="Books">
+  <span class="for-screen-reader">All books</span>
+</a>

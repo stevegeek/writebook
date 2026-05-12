@@ -1,0 +1,56 @@
+{# Picture form — used by both new.html and edit.html.                          #}
+{# Context vars: book (new), leaf + picture + attachment (edit), schema          #}
+{#                                                                               #}
+{# For edit: the title input is in leafables/_edit_header.html wired via         #}
+{#   form="leafable-editor". The form here only needs image + caption.           #}
+{#                                                                               #}
+{# For new: title is derived from caption in the handler; just image + caption   #}
+{#   needed (PictureSchema has title optional — handler uses caption as title).  #}
+
+{% if leaf %}
+  {# edit path — title from the header nav input (form="leafable-editor") #}
+  <form method="post" action="{% url 'pictures:edit' id: leaf.id %}"
+        enctype="multipart/form-data" id="leafable-editor">
+    {% csrf_input %}
+    <label class="input input--file input--picture unpad" data-controller="upload-preview">
+      {% if attachment %}
+        <img src="{{ attachment.file.url }}" alt="{{ picture.caption }}"
+             data-upload-preview-target="image">
+      {% else %}
+        <img src="{% asset 'images/default-picture.webp' %}" alt="Picture"
+             data-upload-preview-target="image">
+      {% endif %}
+      <input type="file" name="image" class="input"
+             accept="image/png, image/jpeg, image/jpg, image/webp"
+             autofocus
+             data-upload-preview-target="input"
+             data-action="upload-preview#previewImage">
+    </label>
+    <div class="flex align-center gap margin-block">
+      {# TODO: translation_button(:picture_caption) — i18n helper not ported #}
+      <input type="text" name="caption" value="{{ picture.caption }}"
+             class="input" placeholder="Picture caption">
+    </div>
+    <button type="submit" hidden data-upload-preview-target="button">Save</button>
+  </form>
+{% else %}
+  {# new path #}
+  <form method="post" action="{% url 'books:pictures_new' book_id: book.id %}"
+        enctype="multipart/form-data" id="leafable-editor">
+    {% csrf_input %}
+    <label class="input input--file input--picture unpad" data-controller="upload-preview">
+      <img src="{% asset 'images/default-picture.webp' %}" alt="Picture"
+           data-upload-preview-target="image">
+      <input type="file" name="image" class="input" required
+             accept="image/png, image/jpeg, image/jpg, image/webp"
+             autofocus
+             data-upload-preview-target="input"
+             data-action="upload-preview#previewImage">
+    </label>
+    <div class="flex align-center gap margin-block">
+      {# TODO: translation_button(:picture_caption) — i18n helper not ported #}
+      <input type="text" name="caption" class="input" placeholder="Picture caption">
+    </div>
+    <button type="submit" hidden data-upload-preview-target="button">Save</button>
+  </form>
+{% endif %}

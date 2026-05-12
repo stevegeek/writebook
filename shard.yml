@@ -1,0 +1,30 @@
+name: marten_writebook
+version: 0.1.0
+
+# `marten` is a transitive dep via marten_turbo — declared as a path-pin in
+# shard.override.yml (gitignored, per workspace convention).
+dependencies:
+  encoded_id_cr:
+    path: ../encoded-id-cr
+  marten_encoded_id:
+    path: ../marten-encoded-id
+  marten_turbo:
+    path: ../marten-turbo
+  marten_cable:
+    path: ../marten-cable
+  marten_auth:
+    github: martenframework/marten-auth
+  sqlite3:
+    github: crystal-lang/crystal-sqlite3
+  markd:
+    github: icyleaf/markd
+  tartrazine:
+    github: ralsina/tartrazine
+  vips:
+    github: naqvis/crystal-vips
+  goban:
+    github: soya-daizu/goban
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba

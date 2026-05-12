@@ -1,0 +1,17 @@
+{% extend "base.html" %}
+
+{% block title %}Sign in as {{ user.name }}{% endblock %}
+
+{% block content %}
+{# Mirrors Rails `<%= auto_submit_form_with method: :put %>`: an invisible
+   form that submits as soon as the page loads, redeeming the transfer
+   token. If JS is disabled or the user wants to confirm, a fallback
+   button is rendered inside <noscript>-style markup. #}
+<form method="post" action="{{ redeem_url }}" data-controller="auto-submit"
+      class="flex justify-center margin-block-double">
+  {% csrf_input %}
+  <button type="submit" class="btn btn--reversed txt-large">
+    Sign in as {{ user.name }}
+  </button>
+</form>
+{% endblock %}

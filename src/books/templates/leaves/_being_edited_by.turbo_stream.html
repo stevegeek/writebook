@@ -1,0 +1,17 @@
+{# Body of the real-time "being edited by" broadcast. Rendered server-side    #}
+{# (from the leafable update handlers via                                      #}
+{# MartenTurbo.broadcast_append_to(...)) — the helper wraps this output in     #}
+{# a <turbo-stream action="append" target="leaf_<id>_being_edited"> envelope. #}
+{# Mirrors writebook-rails' leaves/_being_edited_by.turbo_stream.erb (just     #}
+{# the inner block — Rails wraps via turbo_stream.append do).                  #}
+{#                                                                             #}
+{# Required broadcast locals: leaf, user.                                      #}
+<div id="user_{{ user.id }}_being_edited_by"
+     class="flex-inline align-center justify-center margin-block-end-double txt-medium gap being-edited-by"
+     data-controller="autoremove"
+     data-action="animationend->autoremove#remove"
+     data-hide-from-user-id="{{ user.id }}">
+  <strong class="margin-inline-end-half">{{ user.name }}</strong>
+  <span class="spinner txt-small flex-inline"></span>
+  <img src="{% asset 'images/write.svg' %}" aria-hidden="true" width="18" height="18" alt="" class="colorize--white margin-inline-start">
+</div>

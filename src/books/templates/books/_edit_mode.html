@@ -1,0 +1,27 @@
+{# Edit-mode toggle switch for leaf show / edit pages. Mirrors                 #}
+{# writebook-rails' books/_edit_mode.html.erb. Rendered by both                 #}
+{# pages/show.html (checked: false) and pages/edit.html (checked: true) via    #}
+{# the surrounding {% if editable %}…{% endif %} guard.                        #}
+{#                                                                             #}
+{# Required context vars:                                                      #}
+{#   target_url — where the toggle should navigate (set by includer)          #}
+{#   checked    — current state of the switch (truthy = edit mode on)         #}
+{#                                                                             #}
+{# Maps to the edit_mode_controller.js Stimulus controller — flipping the      #}
+{# switch sets the `edit_mode` cookie and Turbo.visits target_url.             #}
+<div class="flex align-center gap flex-item-no-shrink"
+     data-controller="edit-mode"
+     data-edit-mode-target-url-value="{{ target_url }}"
+     data-edit-mode-editing-class="edit-mode"
+     data-edit-mode-autosave-outlet="[data-controller='autosave']">
+  <img src="{% asset 'images/eye.svg' %}" aria-hidden="true" width="28" height="28" alt="" class="colorize--black">
+  <label class="switch txt-medium">
+    <input type="checkbox" name="edit_mode_enabled"
+           {% if checked %}checked{% endif %}
+           class="switch__input"
+           data-action="edit-mode#change">
+    <span class="switch__btn round"></span>
+    <span class="for-screen-reader">Editing mode</span>
+  </label>
+  <img src="{% asset 'images/write.svg' %}" aria-hidden="true" width="24" height="24" alt="" class="colorize--black">
+</div>

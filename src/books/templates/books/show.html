@@ -1,0 +1,155 @@
+{% extend "base.html" %}
+
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block layout_class %}book{% endblock %}
+
+{% block head %}
+<link rel="alternate" type="text/markdown" href="{% url 'books:markdown' id: book.id %}">
+<meta property="og:title" content="{{ book.title }}">
+<meta property="og:description" content="{{ book.subtitle }}">
+{% if cover %}<meta property="og:image" content="{{ cover.file.url }}">{% endif %}
+<meta property="twitter:title" content="{{ book.title }}">
+<meta property="twitter:description" content="{{ book.subtitle }}">
+{% if cover %}<meta property="twitter:image" content="{{ cover.file.url }}">{% endif %}
+<meta property="twitter:card" content="summary_large_image">
+{% endblock %}
+
+{% block header %}
+<nav class="book__navbar">
+  <a href="{% url 'books:index' %}" class="btn">
+    <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Go back</span>
+  </a>
+
+  <span class="btn btn--placeholder placeholder-start" aria-hidden="true"></span>
+
+  <div class="breadcrumbs">
+    {% include "books/_index_link.html" %}
+    <span class="flex-item-no-shrink">&#9656;</span>
+    <strong>{{ book.title }}</strong>
+  </div>
+
+  {# Start-reading button — first active leaf in the book. Hidden until JS reveals; #}
+  {# matches Rails' link_to_first_leafable which only renders when leaves exist.    #}
+  {% for leaf in leaves %}{% if loop.first? %}{% if leaf.picture %}<a href="{% url 'pictures:show' id: leaf.id %}"{% elsif leaf.section %}<a href="{% url 'sections:show' id: leaf.id %}"{% else %}<a href="{% url 'pages:show' id: leaf.id %}"{% endif %} class="disable-when-arranging" hidden data-controller="hotkey" data-action="keydown.right@document->hotkey#click touch:swipe-right@window->hotkey#click">
+    <span class="btn">
+      <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Start reading</span>
+    </span>
+    <span class="overflow-ellipsis">{{ leaf.title }}</span>
+  </a>{% endif %}{% endfor %}
+
+  <span class="btn btn--placeholder placeholder-end" aria-hidden="true"></span>
+
+  <button class="btn fullscreen" data-action="fullscreen#toggle" data-fullscreen-target="button">
+    <img src="{% asset 'images/expand.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Enter fullscreen</span>
+  </button>
+
+  {% include "books/searches/_search.html" %}
+
+  {% if editable %}
+    <a href="{% url 'books:edit' id: book.id %}" class="btn settings">
+      <img src="{% asset 'images/settings.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Edit book settings</span>
+    </a>
+  {% endif %}
+</nav>
+{% endblock %}
+
+{% block content %}
+<aside class="txt-align-center margin-block">
+  <div class="book__sidebar {% if not cover %}theme--{{ book.theme }}{% endif %}">
+    {% if cover %}
+      <img src="{{ cover.file.url }}" alt="Cover for {{ book.title }}" class="book__cover margin-block-none center">
+    {% else %}
+      <span class="book__cover-wrapper">
+        <img src="{% asset 'images/empty-cover.png' %}" alt="Book cover" class="book__cover margin-block-none center">
+        <span class="book__title overflow-line-clamp pad txt-align-start txt-tight-lines" style="--lines: 6" aria-hidden="true">{{ book.title }}</span>
+      </span>
+    {% endif %}
+
+    {% if editable %}
+      {% turbo_frame publication_frame_id %}
+        {% include "books/publications/_publication.html" %}
+      {% end_turbo_frame %}
+    {% endif %}
+
+    <span data-controller="edit-mode" data-edit-mode-editing-class="edit-mode"></span>
+  </div>
+</aside>
+
+<div class="arrangement__container toc__container full-width txt-align-center"
+  data-controller="arrangement reading-progress"
+  data-arrangement-url-value="{% url 'books:leaves_moves' book_id: book.id %}"
+  data-arrangement-cursor-class="arrangement-cursor"
+  data-arrangement-selected-class="arrangement-selected"
+  data-arrangement-placeholder-class="arrangement-placeholder"
+  data-arrangement-adding-mode-class="arrangement--adding"
+  data-arrangement-move-mode-class="arrangement-move-mode"
+  data-reading-progress-book-id-value="{{ book.id }}"
+  data-reading-progress-last-read-class="toc__leaf--last-read">
+  <h1 class="flex flex-column txt-tight-lines txt-align-start margin-block-end">
+    <strong class="book__title txt-x-large--responsive">{{ book.title }}</strong>
+    <span class="txt-large--responsive txt-normal">{{ book.subtitle }}</span>
+    <span class="txt-large--responsive txt-normal">{{ book.author }}</span>
+  </h1>
+
+  <div class="book__toolbar fill-white flex gap-half pad-block margin-block-end-half justify-center {% if editable %}position-sticky{% endif %}" data-controller="toc-view" data-toc-view-id-value="book_{{ book.id }}">
+    <label class="btn txt-medium disable-when-empty">
+      <input type="radio" name="view" id="toc-list" value="list" data-toc-view-target="switch" data-toc-view-type-value="list" data-action="toc-view#saveViewPref">
+      <img src="{% asset 'images/view-list.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">List view</span>
+    </label>
+
+    <label class="btn txt-medium flex-item-justify-start disable-when-empty">
+      <input type="radio" name="view" id="toc-grid" value="grid" checked data-toc-view-target="switch" data-toc-view-type-value="grid" data-action="toc-view#saveViewPref">
+      <img src="{% asset 'images/view-grid.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Page view</span>
+    </label>
+
+    {% if editable %}
+      {% include "books/_create_buttons.html" %}
+      {% include "books/_mode_buttons.html" %}
+    {% endif %}
+  </div>
+
+  <div class="position-relative">
+    {% if editable %}
+      <div class="toc__blank-slate align-center justify-start">
+        <img src="{% asset 'images/blank-slate-arrows.svg' %}" aria-hidden="true" width="60" height="60" class="colorize--black" alt="">
+        <span class="flex align-center gap-half"><span>&#127482;&#127480;</span> <span>Pick a page type to get started</span></span>
+        <span class="flex align-center gap-half"><span>&#127466;&#127480;</span> <span>Elige un tipo de página para comenzar</span></span>
+        <span class="flex align-center gap-half"><span>&#127467;&#127479;</span> <span>Choisissez un type de page pour commencer</span></span>
+        <span class="flex align-center gap-half"><span>&#127470;&#127475;</span> <span>शुरू करने के लिए एक पृष्ठ प्रकार चुनें</span></span>
+        <span class="flex align-center gap-half"><span>&#127465;&#127466;</span> <span>Wählen Sie einen Seitentyp, um zu beginnen</span></span>
+        <span class="flex align-center gap-half"><span>&#127463;&#127479;</span> <span>Escolha um tipo de página para começar</span></span>
+      </div>
+    {% endif %}
+
+    <menu class="toc margin-none" tabindex="0" data-arrangement-target="container" data-action="click->arrangement#click dragstart->arrangement#dragStart dragover->arrangement#dragOver:prevent dragend->arrangement#dragEnd drop->arrangement#drop keydown.up->arrangement#moveBefore keydown.right->arrangement#moveAfter keydown.down->arrangement#moveAfter keydown.left->arrangement#moveBefore keydown.shift+up->arrangement#moveBefore keydown.shift+right->arrangement#moveAfter keydown.shift+down->arrangement#moveAfter keydown.shift+left->arrangement#moveBefore keydown.space->arrangement#toggleMoveMode keydown.enter->arrangement#applyMoveMode keydown.esc->arrangement#cancelMoveMode">
+      {# Inline <turbo-frame> instead of {% turbo_frame %} so we can add the    #}
+      {# data-arrangement-target="list" attribute Stimulus needs. The tag       #}
+      {# helper's kwargs syntax (`key: value`) doesn't accept `data-…` keys.    #}
+      <turbo-frame id="leaves" data-arrangement-target="list">
+        {% for leaf in leaves %}
+          {% include "leaves/_leaf.html" %}
+        {% endfor %}
+      </turbo-frame>
+    </menu>
+
+    <div data-arrangement-target="layer" class="toc"></div>
+    <div data-arrangement-target="dragImage" class="arrangement-drag-image"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<nav class="book__nav flex align-center justify-center">
+  <a href="https://once.com/writebook" class="product__wordmark btn btn--plain txt-medium" target="_blank">
+    <img src="{% asset 'images/writebook-icon.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span>Made with Writebook</span>
+  </a>
+</nav>
+{% endblock %}

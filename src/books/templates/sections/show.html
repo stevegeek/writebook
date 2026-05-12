@@ -1,0 +1,36 @@
+{% extend "base.html" %}
+
+{% block title %}{{ leaf.title }}{% endblock %}
+
+{% block head %}
+<link rel="alternate" type="text/markdown" href="{% url 'sections:markdown' id: leaf.id %}">
+{% endblock %}
+
+{% block header %}
+  {% include "leaves/_header.html" %}
+{% endblock %}
+
+{% block toolbar %}
+  {% if editable %}
+    <div class="flex flex-column">
+      <div class="page-toolbar fill-shade">
+        {% include "books/_edit_mode.html" with target_url=edit_url, checked=false %}
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block sidebar %}
+  {% include "leaves/_sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+  {# Mirrors Rails leafables/show.html.erb section branch (page--section + h1). #}
+  <div class="page--section{% if section.theme == "dark" %} theme--dark{% endif %}">
+    <h1>{{ section.body_html|safe }}</h1>
+  </div>
+{% endblock %}
+
+{% block footer %}
+  {% include "leaves/_navigation.html" %}
+{% endblock %}

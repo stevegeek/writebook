@@ -1,0 +1,46 @@
+{# Page form — used by both new.html and edit.html.                              #}
+{# Context vars: book (new), leaf + page (edit), schema                          #}
+{#                                                                               #}
+{# For edit: the title input is in leafables/_edit_header.html wired via         #}
+{#   form="leafable-editor". The form here only needs the body editor.           #}
+{#                                                                               #}
+{# For new: title input is included inside this form directly.                   #}
+{#                                                                               #}
+{# Markdown editor — uses Basecamp's `house` package (loaded from CDN as the     #}
+{# `house` importmap entry in base.html). The package defines two custom         #}
+{# elements:                                                                     #}
+{#   <house-md>           — form-associated rich-markdown editor                 #}
+{#   <house-md-toolbar>   — formatting button bar (rendered by                   #}
+{#                          pages/_house_toolbar.html, referenced by id          #}
+{#                          via the `toolbar` attribute below)                  #}
+{#                                                                               #}
+{# Autosave: `data-controller="autosave"` mirrors Rails' `leafable_edit_form`    #}
+{# helper. The autosave controller fires `change` on input/house-md:change, then #}
+{# debounces a 3s submit. Form submits to the same edit endpoint and the         #}
+{# handler returns 204 No Content for XHR/Turbo requests so the editor doesn't   #}
+{# navigate away.                                                                #}
+
+{% if leaf %}
+  {# edit path — title comes from the header nav input (form="leafable-editor") #}
+  <form method="post" action="{% url 'pages:edit' id: leaf.id %}" id="leafable-editor"
+        data-controller="autosave"
+        data-action="autosave#submit:prevent input@document->autosave#change house-md:change->autosave#change"
+        data-autosave-clean-class="clean"
+        data-autosave-dirty-class="dirty"
+        data-autosave-saving-class="saving">
+    {% csrf_input %}
+    <house-md name="body" toolbar="house_toolbar" required autofocus class="page__editor">{{ page.body.content }}</house-md>
+    <button type="submit" hidden>Save</button>
+  </form>
+{% else %}
+  {# new path — title field lives in this form since there is no edit-header nav #}
+  <form method="post" action="{% url 'books:pages_new' book_id: book.id %}" id="leafable-editor">
+    {% csrf_input %}
+    <input type="text" name="title" required
+           placeholder="Page title"
+           class="input full-width margin-block"
+           autocomplete="off">
+    <house-md name="body" toolbar="house_toolbar" class="page__editor"></house-md>
+    <button type="submit" hidden>Save</button>
+  </form>
+{% endif %}

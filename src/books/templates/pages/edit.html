@@ -1,0 +1,44 @@
+{% extend "base.html" %}
+
+{% block title %}Edit {{ leaf.title }}{% endblock %}
+
+{% block header %}
+  {% include "leafables/_edit_header.html" %}
+{% endblock %}
+
+{% block toolbar %}
+  <div class="page-toolbar fill-selected align-center gap-half margin-block-end-double">
+    {% if editable %}
+      {% include "books/_edit_mode.html" with target_url=show_url, checked=true %}
+    {% endif %}
+
+    <span class="separator margin-inline-half" aria-hidden="true"></span>
+
+    <span class="overflow-y overflow-hide-scrollbar">
+      {% include "pages/_house_toolbar.html" %}
+    </span>
+
+    <span class="separator margin-inline-half" aria-hidden="true"></span>
+
+    {% include "leaves/_history.html" %}
+
+    <button type="submit" form="leafable-editor" class="btn flex page-toolbar__save flex-item-justify-end flex-item-no-shrink txt-small">
+      <img src="{% asset 'images/check.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Save</span>
+    </button>
+  </div>
+{% endblock %}
+
+{% block sidebar %}
+  {% include "leaves/_sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+  <article class="layout--reading">
+    {% include "leaves/_being_edited_indicator.html" %}
+
+    {% include "pages/_form.html" %}
+  </article>
+{% endblock %}
+
+{% block footer %}{% include "leaves/_edit_footer.html" %}{% endblock %}

@@ -1,0 +1,24 @@
+{% extend "base.html" %}
+
+{% block title %}Create a new book{% endblock %}
+
+{% block header %}
+<nav>
+  <a href="{% url 'books:index' %}" class="btn flex-item-justify-start">
+    <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    <span class="for-screen-reader">Cancel and go back</span>
+  </a>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "books/_form.html" %}
+{% endblock %}
+
+{% block footer %}
+<nav class="new-book-btn flex justify-center pad">
+  <button type="submit" form="book-editor" class="btn btn--reversed txt-medium--responsive" aria-label="Create book" title="Create book">
+    <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+  </button>
+</nav>
+{% endblock %}

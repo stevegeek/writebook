@@ -1,0 +1,38 @@
+<div class="flex align-center gap txt-medium--responsive" data-controller="dependent-checkbox">
+  <span class="flex align-center gap-half">
+    {% if user.role == "administrator" %}
+      <img src="{% asset 'images/crown.svg' %}" width="18" height="18" aria-hidden="true" class="colorize--black" alt="">
+    {% endif %}
+    <span class="overflow-ellipsis txt-medium--responsive">{{ user.name }}</span>
+  </span>
+  <hr class="flex-item-grow margin-none" aria-hidden="true" style="--border-style: dashed">
+
+  <fieldset class="flex align-center gap borderless unpad margin-none">
+    <legend class="for-screen-reader">{{ user.name }}</legend>
+    <label class="btn btn--small flex-item-no-shrink">
+      <input type="checkbox"
+             name="editor_ids[]"
+             value="{{ user.id }}"
+             {% if user.id in editor_ids %}checked{% endif %}
+             {% if user.role == "administrator" %}disabled{% endif %}
+             data-action="dependent-checkbox#input"
+             data-dependent-checkbox-target="dependant"
+             aria-label="Role: Writer">
+      <img src="{% asset 'images/write.svg' %}" width="24" height="24" aria-hidden="true" alt="">
+      <span class="for-screen-reader"></span>
+    </label>
+
+    <label class="btn btn--small flex-item-no-shrink book-access__reader">
+      <input type="checkbox"
+             name="reader_ids[]"
+             value="{{ user.id }}"
+             {% if user.id in reader_ids %}checked{% endif %}
+             {% if user.role == "administrator" %}disabled{% endif %}
+             data-action="dependent-checkbox#input"
+             data-dependent-checkbox-target="dependee"
+             aria-label="Role: Reader">
+      <img src="{% asset 'images/eye.svg' %}" width="24" height="24" aria-hidden="true" alt="">
+      <span class="for-screen-reader"></span>
+    </label>
+  </fieldset>
+</div>
