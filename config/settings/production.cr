@@ -10,6 +10,17 @@ Marten.configure :production do |config|
     .map(&.strip)
     .reject(&.empty?)
 
+  # Behind the exe.dev HTTPS proxy: terminate TLS upstream, talk plain HTTP
+  # to the app. Trust the forwarded headers so request.scheme is "https"
+  # and the CSRF Origin check matches the browser-visible URL.
+  config.use_x_forwarded_host = true
+  config.use_x_forwarded_port = true
+  config.use_x_forwarded_proto = true
+
+  config.csrf.trusted_origins = ENV.fetch("MARTEN_ALLOWED_HOSTS", "")
+    .split(",").map(&.strip).reject(&.empty?)
+    .map { |h| "https://#{h}" }
+
   config.sessions.cookie_secure = true
   config.sessions.cookie_http_only = true
 
