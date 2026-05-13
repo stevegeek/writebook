@@ -17,4 +17,8 @@ Marten.configure :production do |config|
   config.csrf.cookie_http_only = true
 
   config.templates.cached = true
+
+  # Serve collected assets directly from the app in production. Run
+  # `script/manage collectassets` during deploy to populate `assets/`.
+  config.middleware.unshift(Marten::Middleware::AssetServing)
 end

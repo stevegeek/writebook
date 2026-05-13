@@ -9,6 +9,7 @@
 /lib/
 /tmp/
 /media/
+/assets/
 
 # Per-machine override pinning marten + marten-cable to local checkouts.
 /shard.override.yml
