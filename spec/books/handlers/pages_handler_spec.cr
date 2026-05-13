@@ -176,16 +176,49 @@ describe "Books::PagesCreateHandler" do
   end
 
   # Ports Rails "create" (the title/body-from-params portion).
-  # FIXME(porting gap): Marten's PagesCreateHandler is "inline-create" — it
-  # makes an empty Page+Leaf with title "New page" and ignores any submitted
-  # leaf[title]/page[body] fields. Rails' equivalent accepts those params and
-  # also a `position` param to insert at a specific index. Both behaviours
-  # need to be added to PagesCreateHandler before these tests can pass.
-  pending "honors submitted title and body" do
+  it "honors submitted title and body" do
+    Spec::Factories.create_account
+    kevin = Spec::Factories.create_user(email: "kevin@example.com")
+    handbook = Spec::Factories.create_book(title: "Handbook", editor: kevin)
+
+    client = Marten::Spec.client
+    Spec::Sessions.sign_in_as(client, kevin)
+
+    response = client.post(
+      Marten.routes.reverse("books:pages_create", book_id: handbook.pk!),
+      data: {"title" => "Custom title", "body" => "Custom **body** here"},
+      headers: {"Accept" => "text/vnd.turbo-stream.html"},
+    )
+
+    response.status.should eq(200)
+    new_leaf = Books::Leaf.filter(book_id: handbook.pk).order("-id").first.not_nil!
+    new_leaf.title.should eq("Custom title")
+    page = new_leaf.page.not_nil!
+    page.body.try(&.content).should eq("Custom **body** here")
   end
 
   # Ports Rails "create at a specific position".
-  pending "honors a submitted position param" do
+  it "honors a submitted position param" do
+    Spec::Factories.create_account
+    kevin = Spec::Factories.create_user(email: "kevin@example.com")
+    handbook = Spec::Factories.create_book(title: "Handbook", editor: kevin)
+    # Seed three leaves so the new one has somewhere to land.
+    Spec::Factories.create_page_leaf(handbook, title: "A", body: "a")
+    Spec::Factories.create_page_leaf(handbook, title: "B", body: "b")
+    Spec::Factories.create_page_leaf(handbook, title: "C", body: "c")
+
+    client = Marten::Spec.client
+    Spec::Sessions.sign_in_as(client, kevin)
+
+    response = client.post(
+      Marten.routes.reverse("books:pages_create", book_id: handbook.pk!),
+      data: {"title" => "Inserted", "body" => "", "position" => "2"},
+      headers: {"Accept" => "text/vnd.turbo-stream.html"},
+    )
+
+    response.status.should eq(200)
+    leaves = Books::Leaf.filter(book_id: handbook.pk).order(:position_score, :id).to_a
+    leaves[1].title.should eq("Inserted")
   end
 
   it "forbids non-editors" do

@@ -157,11 +157,51 @@ describe "Books::Searchable" do
     end
   end
 
-  pending "matches_for_highlight" do
-    # FIXME(porting gap): Rails exposes a `matches_for_highlight(terms)`
-    # helper on Leaf that returns the matching tokens (longest first), used
-    # by the search results template to highlight matched terms in titles
-    # outside of FTS5's `highlight()`. The Marten port does not yet ship an
-    # equivalent.
+  describe "#matches_for_highlight" do
+    it "returns the unique matched tokens, longest first" do
+      book = Spec::Factories.create_book(title: "Handbook")
+      leaf = Spec::Factories.create_page_leaf(
+        book,
+        title: "Welcome",
+        body: "kevin was here and kevin says hello again",
+      )
+      leaf.reindex
+
+      leaf.matches_for_highlight("kevin").should eq(["kevin"])
+    end
+
+    it "returns multiple distinct tokens longest-first" do
+      book = Spec::Factories.create_book(title: "Handbook")
+      leaf = Spec::Factories.create_page_leaf(
+        book,
+        title: "Welcome",
+        body: "alpha beta gamma alpha gamma",
+      )
+      leaf.reindex
+
+      result = leaf.matches_for_highlight("alpha gamma")
+      result.size.should eq(2)
+      result.should contain("alpha")
+      result.should contain("gamma")
+      # Tie-broken arbitrarily on same-length tokens — only assert order
+      # when the lengths actually differ.
+    end
+
+    it "returns [] for blank / nil terms" do
+      book = Spec::Factories.create_book(title: "Handbook")
+      leaf = Spec::Factories.create_page_leaf(book, title: "T", body: "x")
+      leaf.reindex
+
+      leaf.matches_for_highlight(nil).should eq([] of String)
+      leaf.matches_for_highlight("   ").should eq([] of String)
+    end
+
+    it "returns [] when nothing matches" do
+      book = Spec::Factories.create_book(title: "Handbook")
+      leaf = Spec::Factories.create_page_leaf(book, title: "T", body: "nothing to find here")
+      leaf.reindex
+
+      leaf.matches_for_highlight("missingword").should eq([] of String)
+    end
   end
 end

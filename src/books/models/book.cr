@@ -34,6 +34,15 @@ module Books
 
     before_validation :populate_slug
 
+    # Mirrors Rails' `Book#press(leafable, leaf_params)`: build a Leaf
+    # wrapping the given leafable and persist it. Rails takes an
+    # arbitrary `leaf_params` hash; Crystal can't statically splat
+    # unknown kwargs into Marten's macro-generated `create!`, so we
+    # take the two parameters actually used in practice (title, status).
+    def press(leafable : Marten::DB::Model, title : String, status : String = "active") : Leaf
+      Leaf.create!(book: self, leafable: leafable, title: title, status: status)
+    end
+
     # Aggregate Markdown for export — concatenates each leafable's `markable`
     # output across the book's active leaves in display order.
     def markable : String

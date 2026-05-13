@@ -42,11 +42,16 @@ describe "Books::Book" do
     end
   end
 
-  pending "press: building a leaf from a leafable + title" do
-    # FIXME(porting gap): Rails' Book#press(leafable, title:) is not ported.
-    # The Marten side constructs Leaf rows directly (see factories or
-    # PagesHandler#create). If a `press`-style helper is added later, this
-    # test should mirror the Rails assertion that the resulting leaf is a
-    # page wrapper with the given title and body.
+  describe "#press" do
+    it "builds a leaf from a leafable + title" do
+      book = Spec::Factories.create_book(title: "Handbook")
+      page = Books::Leafables::Page.create!
+
+      leaf = book.press(page, title: "Welcome", status: "active")
+
+      leaf.book!.pk.should eq(book.pk)
+      leaf.title.should eq("Welcome")
+      leaf.leafable.try(&.as?(Books::Leafables::Page)).try(&.pk).should eq(page.pk)
+    end
   end
 end

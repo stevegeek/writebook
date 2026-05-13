@@ -93,6 +93,29 @@ module Books
       update_in_search_index if searchable?
     end
 
+    # Mirrors Rails `Leaf#matches_for_highlight(terms)` — returns the unique
+    # matching tokens (longest first) for use by the search results template
+    # to highlight matched terms outside of FTS5's `highlight()`. Returns []
+    # when the query is empty / invalid or the leaf isn't indexed.
+    def matches_for_highlight(terms : String?) : Array(String)
+      cleaned = Searchable.sanitize_query(terms)
+      return [] of String if cleaned.nil?
+
+      content = nil
+      Marten::DB::Connection.default.open do |db|
+        db.query(
+          "SELECT highlight(leaf_search_index, 1, '<mark>', '</mark>') AS h " \
+          "FROM leaf_search_index WHERE rowid = ? AND leaf_search_index MATCH ?",
+          pk, cleaned
+        ) do |rs|
+          rs.each { content = rs.read(String?) }
+        end
+      end
+
+      return [] of String if content.nil?
+      content.not_nil!.scan(/<mark>(.*?)<\/mark>/).map(&.[1]).uniq.sort_by(&.size).reverse
+    end
+
     private def searchable? : Bool
       !searchable_content.nil?
     end

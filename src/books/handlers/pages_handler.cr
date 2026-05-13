@@ -119,14 +119,35 @@ module Books
       return head :not_found if target_book.nil?
       return head :forbidden unless target_book.editable?(current_user)
 
+      # Title / body / position carry over from a regular form submit (Rails
+      # leafables_controller passes them through). Blanks fall back to the
+      # inline-create defaults — the user can rename later in the edit UI.
+      # `request.data` raises on no/garbled body (e.g. the inline "+ Page"
+      # turbo POST sends none); treat that as no params provided.
+      submitted_title, submitted_body, position = begin
+        data = request.data
+        {
+          data["title"]?.try(&.to_s).presence,
+          data["body"]?.try(&.to_s),
+          data["position"]?.try(&.to_s).try(&.to_i?),
+        }
+      rescue
+        {nil, nil, nil}
+      end
+
       created_leaf = nil
       Marten::DB::Connection.default.transaction do
         page = Leafables::Page.create!
-        page.body = ""
-        created_leaf = Leaf.create!(book: target_book, leafable: page, title: "New page", status: "active")
+        page.body = submitted_body || ""
+        created_leaf = target_book.press(page, title: submitted_title || "New page")
       end
 
       leaf = created_leaf.not_nil!
+      # Mirrors Rails LeafablesController#position_new_leaf — when the form
+      # supplies a `position`, the just-created leaf jumps there. Rails'
+      # acts_as_list position param is 1-indexed; Marten's Positionable
+      # move_to_position is 0-indexed (see positionable_spec). Translate.
+      leaf.move_to_position(position - 1) if position
 
       if request.turbo?
         turbo_stream("books/leafable_create.turbo_stream.html", {"leaf" => leaf})
