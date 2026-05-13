@@ -16,7 +16,7 @@ module Books
   class Markdown < Marten::Model
     include Marten::Template::CanDefineTemplateAttributes
     include ::MartenText::Renderable
-    include SignedGlobalId::HasIt
+    include MartenGlobalId::ModelMixin
 
     field :id, :big_int, primary_key: true, auto: true
     # Polymorphic `to:` must list at least two types — Crystal would

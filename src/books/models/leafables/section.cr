@@ -5,7 +5,7 @@ module Books::Leafables
   class Section < Marten::Model
     include ::Marten::Template::CanDefineTemplateAttributes
     include ::Books::Leafable
-    include ::Books::SignedGlobalId::HasIt
+    include ::MartenGlobalId::ModelMixin
 
     field :id, :big_int, primary_key: true, auto: true
     field :body, :text, blank: true, null: true

@@ -12,6 +12,8 @@ dependencies:
     github: stevegeek/marten-storages
   marten_signed_id:
     github: stevegeek/marten-signed-id
+  marten_global_id:
+    github: stevegeek/marten-global-id
   marten_turbo:
     path: ../marten-turbo
   marten_cable:

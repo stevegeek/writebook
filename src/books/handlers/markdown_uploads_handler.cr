@@ -6,7 +6,7 @@ module Books
   #
   # - POST /markdown_uploads
   #     Form params:
-  #       record_gid     — signed token (Books::SignedGlobalId) identifying
+  #       record_gid     — signed token (MartenGlobalId) identifying
   #                        the record that owns the markdown attribute
   #       attribute_name — e.g. "body" — names the Markdown row on that record
   #       file           — the multipart-uploaded file
@@ -26,7 +26,7 @@ module Books
     SLUG_BYTES = 16
 
     def post
-      record = SignedGlobalId.locate(
+      record = ::MartenGlobalId.locate(
         request.data["record_gid"]?.try(&.to_s),
         purpose: "markdown_upload"
       )

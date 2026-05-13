@@ -13,8 +13,8 @@ require "../../spec_helper"
 # `src/books/templates/pages/_house_toolbar.html`).
 #
 # Implementation lives in `src/books/handlers/markdown_uploads_handler.cr` and
-# resolves the host record via `Books::SignedGlobalId` (covered separately
-# in `spec/books/signed_global_id_spec.cr`).
+# resolves the host record via marten-global-id (covered in that shard's
+# own spec suite at lib/marten_global_id/spec/marten_global_id_spec.cr).
 describe "Books::MarkdownUploadsCreateHandler" do
   # Build the multipart form fixture (record_gid, attribute_name, file) and
   # POST it. Verifies the 201/JSON response shape + the Attachment row that

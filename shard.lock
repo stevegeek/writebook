@@ -85,6 +85,10 @@ shards:
     path: ../marten-delegated-type
     version: 0.1.0
 
+  marten_global_id: # Overridden
+    path: ../marten-global-id
+    version: 0.1.0
+
   marten_importmap:
     git: https://github.com/treagod/marten-importmap.git
     version: 0.1.2

@@ -5,7 +5,6 @@ require "marten_storages"
 # Leafables (Page/Section/Picture), and Attachment (storage), plus the
 # concerns and helpers for those.
 require "./html_scrubber"
-require "./signed_global_id"
 require "./concerns/**"
 require "./models/**"
 require "./schemas/**"
@@ -37,11 +36,21 @@ module Books
 
     # Register the three leafable_* custom template tags. Naming doesn't
     # collide with anything in Marten core / marten-turbo, so registration
-    # ordering doesn't matter here.
+    # ordering doesn't matter here. Also populates marten-global-id's
+    # class allowlist (can't live in config/settings/base.cr because
+    # settings load before models are parsed).
     def setup
       Marten::Template::Tag.register("leafable_url", LeafableHelpers::LeafableUrlTag)
       Marten::Template::Tag.register("leafable_edit_url", LeafableHelpers::LeafableEditUrlTag)
       Marten::Template::Tag.register("leafable_class", LeafableHelpers::LeafableClassTag)
+
+      Marten.settings.global_id.allowed_classes = [
+        Books::Book,
+        Books::Markdown,
+        Books::Leafables::Page,
+        Books::Leafables::Section,
+        Books::Leafables::Picture,
+      ] of Marten::DB::Model.class
     end
   end
 end
