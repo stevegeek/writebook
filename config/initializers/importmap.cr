@@ -19,7 +19,9 @@ Marten.configure do |config|
     pin "@hotwired/stimulus", "https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2.2/dist/stimulus.js"
     pin "@rails/actioncable", "https://cdn.jsdelivr.net/npm/@rails/actioncable@8.0.0/+esm"
     pin "@rails/request.js", "https://cdn.jsdelivr.net/npm/@rails/request.js@0.0.11/+esm"
-    pin "house", "https://cdn.jsdelivr.net/npm/house@0.1.6/+esm"
+    # Basecamp's `house` markdown editor is not published to npm; vendor
+    # the file locally (copied from writebook-rails' vendor/javascript).
+    pin "house", "javascript/vendor/house.min.js"
 
     # Project actions — Turbo Stream custom actions that need to register
     # at boot time (via top-level side effects).
