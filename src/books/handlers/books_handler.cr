@@ -167,43 +167,18 @@ module Books
 
     private def inject_extras : Nil
       book = record
-
-      leaves = nil
-      pages = nil
-      cover = nil
-
-      leaves_ms = Time.measure {
-        leaves = book.leaves.active.with_leafables.order(:position_score, :id).to_a
-      }.total_milliseconds
+      leaves = book.leaves.active.with_leafables.order(:position_score, :id).to_a
 
       # Collapse N per-page markdown SELECTs into one IN-clause query.
       # Mirrors Rails' `includes(leafables: :body)` preloader.
-      preload_ms = Time.measure {
-        pages = leaves.not_nil!.compact_map(&.page)
-        Leafables::Page.preload_body(pages.not_nil!)
-      }.total_milliseconds
-
-      cover_ms = Time.measure {
-        cover = MartenStorages::Service.find_one(model: Attachment, record: book, name: "cover")
-      }.total_milliseconds
+      Leafables::Page.preload_body(leaves.compact_map(&.page))
 
       context[:leaves] = leaves
       context[:signed_in] = signed_in?
       context[:editable] = book.editable?(current_user)
-      context[:cover] = cover
+      context[:cover] = MartenStorages::Service.find_one(model: Attachment, record: book, name: "cover")
       # Used by books/publications/_publication.html for its own {% turbo_frame %}.
       context[:frame_id] = dom_id(book, "publication")
-
-      if ENV["PROFILE"]?
-        n_leaves = leaves.not_nil!.size
-        n_pages = pages.not_nil!.size
-        Log.info {
-          "books#show id=#{book.pk!} leaves=#{n_leaves} pages=#{n_pages} " \
-          "leaves_load=#{leaves_ms.round(2)}ms " \
-          "preload_bodies=#{preload_ms.round(2)}ms " \
-          "cover=#{cover_ms.round(2)}ms"
-        }
-      end
     end
   end
 
