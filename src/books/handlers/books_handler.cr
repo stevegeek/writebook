@@ -32,19 +32,18 @@ module Books
     end
   end
 
-  # Books CRUD. Index + show are public; new/create/edit/update/destroy require sign-in.
+  # Books CRUD. Index + show are public; new/create/edit/update/destroy require
+  # sign-in. Handler order mirrors Rails BooksController action order:
+  # index, new (+ create), show, edit (+ update), destroy. The two
+  # Marten-specific handlers (publication, markdown) trail the CRUD set.
 
   class BooksIndexHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
     include RequestParams
 
-    def get
-      # Mirror Rails' BooksController#ensure_index_is_not_empty: if anonymous and
-      # no published books exist, force sign-in instead of rendering an empty page.
-      if !signed_in? && !Book.published.exists?
-        return redirect(Marten.routes.reverse("accounts:session_new"))
-      end
+    before_dispatch :ensure_index_is_not_empty
 
+    def get
       # Mirror Rails' Book.accessable_or_published.ordered: signed-in users see
       # books they have access to + published; anonymous users see only published.
       books = Book.accessable_or_published(current_user).order(:title).to_a
@@ -76,6 +75,71 @@ module Books
         book_entries: book_entries,
         signed_in:    signed_in?,
       })
+    end
+
+    # Mirrors Rails' BooksController#ensure_index_is_not_empty: if anonymous and
+    # no published books exist, force sign-in instead of rendering an empty page.
+    private def ensure_index_is_not_empty : Marten::HTTP::Response?
+      return nil if signed_in?
+      return nil if Book.published.exists?
+      redirect(Marten.routes.reverse("accounts:session_new"))
+    end
+  end
+
+  class BooksNewHandler < Marten::Handlers::RecordCreate
+    include ::Accounts::AuthenticationHelpers
+    include BookCoverUploadHelpers
+    include RequestParams
+
+    before_dispatch :require_authentication
+    before_render :inject_form_extras
+
+    model Book
+    schema BookSchema
+    template_name "books/new.html"
+
+    def success_url
+      Marten.routes.reverse("books:show", id: record.not_nil!.pk!)
+    end
+
+    def process_valid_schema
+      response = super
+      book = record.not_nil!
+      handle_cover_upload(book)
+      apply_access_form(book)
+      response
+    end
+
+    # Inject the user list + access defaults so _form.html can render the
+    # books/accesses/_access partial. Mirrors Rails' BooksController#new
+    # → set_users + locals: { creating_user: Current.user }.
+    private def inject_form_extras : Nil
+      creating_user = current_user
+      users = ::Accounts::User.active.ordered.to_a
+
+      # On the new form, the creating user is the only editor/reader by default.
+      uid = pk_to_i64(creating_user.try(&.id))
+      default_ids = uid.nil? ? ([] of Int64) : [uid]
+
+      context[:users] = users
+      context[:creating_user] = creating_user
+      context[:editor_ids] = default_ids
+      context[:reader_ids] = default_ids
+      # No record yet during GET (new form), so no cover is injected.
+    end
+
+    # Mirror Rails' update_accesses: gather editor_ids[]/reader_ids[] from the
+    # form (always including the current user) and persist via update_access.
+    private def apply_access_form(book : Book) : Nil
+      editor_ids = collect_ids("editor_ids")
+      reader_ids = collect_ids("reader_ids")
+
+      if (uid = pk_to_i64(current_user.try(&.id)))
+        editor_ids << uid unless editor_ids.includes?(uid)
+        reader_ids << uid unless reader_ids.includes?(uid)
+      end
+
+      book.update_access(editor_ids: editor_ids, reader_ids: reader_ids)
     end
   end
 
@@ -113,70 +177,14 @@ module Books
     end
   end
 
-  class BooksNewHandler < Marten::Handlers::RecordCreate
-    include ::Accounts::AuthenticationHelpers
-    include BookCoverUploadHelpers
-    include RequestParams
-
-    before_dispatch :require_authentication
-
-    model Book
-    schema BookSchema
-    template_name "books/new.html"
-
-    def success_url
-      Marten.routes.reverse("books:show", id: record.not_nil!.pk!)
-    end
-
-    def process_valid_schema
-      response = super
-      book = record.not_nil!
-      handle_cover_upload(book)
-      apply_access_form(book)
-      response
-    end
-
-    # Inject the user list + access defaults so _form.html can render the
-    # books/accesses/_access partial. Mirrors Rails' BooksController#new
-    # → set_users + locals: { creating_user: Current.user }.
-    before_render :inject_form_extras
-
-    private def inject_form_extras : Nil
-      creating_user = current_user
-      users = ::Accounts::User.active.ordered.to_a
-
-      # On the new form, the creating user is the only editor/reader by default.
-      uid = pk_to_i64(creating_user.try(&.id))
-      default_ids = uid.nil? ? ([] of Int64) : [uid]
-
-      context[:users] = users
-      context[:creating_user] = creating_user
-      context[:editor_ids] = default_ids
-      context[:reader_ids] = default_ids
-      # No record yet during GET (new form), so no cover is injected.
-    end
-
-    # Mirror Rails' update_accesses: gather editor_ids[]/reader_ids[] from the
-    # form (always including the current user) and persist via update_access.
-    private def apply_access_form(book : Book) : Nil
-      editor_ids = collect_ids("editor_ids")
-      reader_ids = collect_ids("reader_ids")
-
-      if (uid = pk_to_i64(current_user.try(&.id)))
-        editor_ids << uid unless editor_ids.includes?(uid)
-        reader_ids << uid unless reader_ids.includes?(uid)
-      end
-
-      book.update_access(editor_ids: editor_ids, reader_ids: reader_ids)
-    end
-  end
-
   class BooksEditHandler < Marten::Handlers::RecordUpdate
     include ::Accounts::AuthenticationHelpers
     include BookCoverUploadHelpers
+    include BookEditableGuard
 
     before_dispatch :require_authentication
     before_dispatch :ensure_editable
+    before_render :inject_cover
 
     model Book
     schema BookSchema
@@ -195,22 +203,38 @@ module Books
     end
 
     # Inject the current cover attachment so _form.html can show/remove it.
-    before_render :inject_cover
-
     private def inject_cover : Nil
       book = record
       return if book.nil?
       context[:cover] = MartenStorages::Service.find_one(model: Attachment, record: book, name: "cover")
     end
 
-    private def ensure_editable : Marten::HTTP::Response?
-      book = record
-      unless book.editable?(current_user)
-        return head :forbidden
-      end
-      nil
+    # `BookEditableGuard#ensure_editable` reads its target from `current_book`.
+    # For Marten's generic Record handlers that's just the loaded `record`.
+    private def current_book : Book?
+      record
     end
   end
+
+  class BooksDeleteHandler < Marten::Handlers::RecordDelete
+    include ::Accounts::AuthenticationHelpers
+    include BookEditableGuard
+
+    before_dispatch :require_authentication
+    before_dispatch :ensure_editable
+
+    model Book
+    template_name "books/delete.html"
+    record_context_name "book"
+    success_route_name "books:index"
+    lookup_param "id"
+
+    private def current_book : Book?
+      record
+    end
+  end
+
+  # --- Marten-specific extras below — no direct Rails action equivalent. -------
 
   # Toggles `book.published` from the publication switch in the book sidebar.
   # GET renders the publication panel inside its turbo-frame (used by Turbo
@@ -221,6 +245,7 @@ module Books
     include ::Accounts::AuthenticationHelpers
     include MartenTurbo::Handlers::Concerns::Streamable
     include MartenTurbo::Identifiable
+    include BookEditableGuard
 
     @book : Book? = nil
 
@@ -258,17 +283,14 @@ module Books
       @book.not_nil!
     end
 
+    private def current_book : Book?
+      @book
+    end
+
     private def load_book : Marten::HTTP::Response?
       @book = Book.get(pk: params["id"]?)
       if @book.nil?
         return head :not_found
-      end
-      nil
-    end
-
-    private def ensure_editable : Marten::HTTP::Response?
-      unless book.editable?(current_user)
-        return head :forbidden
       end
       nil
     end
@@ -296,27 +318,6 @@ module Books
         io << book.markable
       end
       respond(content, content_type: "text/markdown", status: 200)
-    end
-  end
-
-  class BooksDeleteHandler < Marten::Handlers::RecordDelete
-    include ::Accounts::AuthenticationHelpers
-
-    before_dispatch :require_authentication
-    before_dispatch :ensure_editable
-
-    model Book
-    template_name "books/delete.html"
-    record_context_name "book"
-    success_route_name "books:index"
-    lookup_param "id"
-
-    private def ensure_editable : Marten::HTTP::Response?
-      book = record
-      unless book.editable?(current_user)
-        return head :forbidden
-      end
-      nil
     end
   end
 end
