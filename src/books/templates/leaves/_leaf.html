@@ -1,5 +1,9 @@
 {# TOC leaf item in books/show. Rendered via {% for leaf in leaves %}{% include "leaves/_leaf.html" %}{% endfor %}. #}
 {# Mirrors Rails app/views/leaves/_leaf.html.erb. #}
+{# Fragment cache: mirrors Rails `cache [ leaf, leaf.book, leaf.book.editable? ]`. #}
+{# Keyed by leaf id + leaf updated_at + book updated_at + editable flag, so the   #}
+{# entry is invalidated on any leaf save, any book save, or a permission change.  #}
+{% cache "leaves/_leaf" 31536000 leaf.id leaf.updated_at book.updated_at editable %}
 <li class="arrangement__item toc__leaf toc__leaf--{% leafable_class leaf %}" id="{% dom_id leaf %}" data-id="{{ leaf.id }}" data-arrangement-target="item">
 
   <span class="btn btn--link arrangement__handle txt-small">
@@ -63,3 +67,4 @@
     {% if leaf.page %}{{ leaf.page.word_count }} words{% endif %}
   </small>
 </li>
+{% endcache %}

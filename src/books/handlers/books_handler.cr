@@ -167,7 +167,7 @@ module Books
 
     private def inject_extras : Nil
       book = record
-      leaves = book.leaves.filter(status: "active").order(:position_score, :id).to_a
+      leaves = book.leaves.active.with_leafables.order(:position_score, :id).to_a
       context[:leaves] = leaves
       context[:signed_in] = signed_in?
       context[:editable] = book.editable?(current_user)

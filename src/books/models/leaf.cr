@@ -34,6 +34,7 @@ module Books
 
     scope :active { filter(status: "active") }
     scope :trashed { filter(status: "trashed") }
+    scope :with_leafables { prefetch(:leafable) }
 
     def active? : Bool
       status == "active"
