@@ -1,9 +1,15 @@
 name: marten_writebook
 version: 0.1.0
 
-# `marten` is a transitive dep via marten_turbo — declared as a path-pin in
-# shard.override.yml (gitignored, per workspace convention).
+# `marten` is also a transitive dep via marten_turbo / etc., but we declare
+# it explicitly here so we can pin to the stevegeek fork — it carries the
+# RelatedSet/ManyToManySet prefetched_relations preservation fix that the
+# books#show prefetch path depends on. Locally, shard.override.yml points
+# the same name at ../marten-src.
 dependencies:
+  marten:
+    github: stevegeek/marten
+    branch: main
   marten_delegated_type:
     github: stevegeek/marten-delegated-type
   marten_text:
