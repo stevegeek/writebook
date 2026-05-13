@@ -26,9 +26,31 @@ Marten.configure do |config|
   # in an initializer (config/initializers/auth.cr) since this file runs
   # before model autoload.
 
+  # Database — pick backend from DATABASE_URL if provided.
+  # Accepts:
+  #   postgres://user:pass@host:port/dbname
+  #   sqlite:///path/to/file.db   (or unset → default sqlite file)
   config.database do |db| # ameba:disable Naming/BlockParameterName
-    db.backend = :sqlite
-    db.name = Path["marten_writebook.db"].expand
+    if (url = ENV["DATABASE_URL"]?) && !url.empty?
+      uri = URI.parse(url)
+      case uri.scheme
+      when "postgres", "postgresql"
+        db.backend = :postgresql
+        db.host = uri.host
+        db.port = uri.port
+        db.user = uri.user
+        db.password = uri.password
+        db.name = uri.path.lchop('/')
+      when "sqlite", "sqlite3"
+        db.backend = :sqlite
+        db.name = uri.path.lchop('/').empty? ? Path["marten_writebook.db"].expand.to_s : uri.path.lchop('/')
+      else
+        raise "Unsupported DATABASE_URL scheme: #{uri.scheme}"
+      end
+    else
+      db.backend = :sqlite
+      db.name = Path["marten_writebook.db"].expand
+    end
   end
 
   config.templates.context_producers = [

@@ -1,11 +1,9 @@
-# Rebuild leaf_search_index as a regular (content-bearing) FTS5 table.
-# The previous `content=''` (contentless) variant disallows UPDATE entirely
-# and requires the original values to be supplied for DELETE — fragile for
-# a write-through index synced via post-commit callbacks. A regular FTS5
-# table stores the content alongside the index and supports straightforward
-# INSERT / DELETE / UPDATE.
+# Rebuild leaf_search_index. SQLite-only: switch from contentless FTS5 (no
+# UPDATE) to a regular FTS5 table. Postgres' table from the v1 migration is
+# already update-safe — nothing to do.
 class Migration::Books::V202605080500001 < Marten::Migration
   def plan
+    return unless Marten::DB::Connection.default.scheme == "sqlite3"
     execute(
       <<-SQL,
         DROP TABLE IF EXISTS leaf_search_index;

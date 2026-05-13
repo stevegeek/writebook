@@ -22,6 +22,9 @@ dependencies:
     github: martenframework/marten-auth
   sqlite3:
     github: crystal-lang/crystal-sqlite3
+  pg:
+    github: will/crystal-pg
+    version: ~> 0.29
   markd:
     github: icyleaf/markd
   tartrazine:
