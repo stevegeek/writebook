@@ -31,5 +31,11 @@ Marten.routes.draw do
   if Marten.env.development? || Marten.env.test?
     path "#{Marten.settings.assets.url}<path:path>", Marten::Handlers::Defaults::Development::ServeAsset, name: "asset"
     path "#{Marten.settings.media_files.url}<path:path>", Marten::Handlers::Defaults::Development::ServeMediaFile, name: "media_file"
+  else
+    # In production the upstream proxy (nginx etc.) would normally serve
+    # /media/ directly from disk. We don't have that here, so let Marten
+    # serve them via the same dev handler — acceptable for this app's
+    # scale (book covers + inline images).
+    path "#{Marten.settings.media_files.url}<path:path>", Marten::Handlers::Defaults::Development::ServeMediaFile, name: "media_file"
   end
 end
