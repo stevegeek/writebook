@@ -17,6 +17,12 @@
     {% block head %}{% endblock %}
     {% if account_custom_styles %}<style>{{ account_custom_styles|safe }}</style>{% endif %}
 
+    {# Mirrors Rails ApplicationHelper#hide_from_user_style_tag — hides any  #}
+    {# element tagged with `data-hide-from-user-id="<current-user-id>"` so   #}
+    {# the editor doesn't see their own "being edited by me" indicator in   #}
+    {# the per-leaf broadcast. Used by leaves/_being_edited_by.turbo_stream.html. #}
+    {% if current_user_id %}<style>[data-hide-from-user-id="{{ current_user_id }}"] { display: none !important; }</style>{% endif %}
+
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.png" type="image/png">

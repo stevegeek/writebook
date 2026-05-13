@@ -44,7 +44,11 @@ module Books
     end
 
     def next_edit : Edit?
-      leaf!.edits.after(self).sorted.last
+      # `after(self)` filters to newer edits; ordering ascending and taking
+      # `.first` gives the *immediately* next edit. The previous form used
+      # `.sorted.last` against the `-created_at` `sorted` scope, which
+      # returned the furthest-future edit instead of the nearest.
+      leaf!.edits.after(self).order(:created_at).first
     end
   end
 end

@@ -1,3 +1,11 @@
 {# Turbo Stream response from PagesCreateHandler / SectionsCreateHandler /  #}
 {# PicturesCreateHandler. Mirrors writebook-rails leafables/create.turbo_stream.erb. #}
 {% turbo_stream "append" "leaves" partial: "leaves/_edit.html" locals: {leaf: leaf} %}
+
+{# Mirrors `turbo_stream.scroll_into_view @leaf, animation: :wiggle` —      #}
+{# scrolls the freshly-appended leaf into view + plays the `wiggle` CSS    #}
+{# animation. The custom client-side action lives in                        #}
+{# src/assets/javascript/actions/scroll_into_view.js. Marten-turbo's       #}
+{# `{% turbo_stream %}` tag has no pass-through for extra attributes        #}
+{# (`animation="wiggle"`), so the element is emitted literally here.       #}
+<turbo-stream action="scroll_into_view" target="{% dom_id leaf %}" animation="wiggle"></turbo-stream>
