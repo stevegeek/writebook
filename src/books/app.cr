@@ -5,6 +5,7 @@ require "marten_storages"
 # Leafables (Page/Section/Picture), and Attachment (storage), plus the
 # concerns and helpers for those.
 require "./html_scrubber"
+require "./signed_global_id"
 require "./concerns/**"
 require "./models/**"
 require "./schemas/**"

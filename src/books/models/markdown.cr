@@ -16,6 +16,7 @@ module Books
   class Markdown < Marten::Model
     include Marten::Template::CanDefineTemplateAttributes
     include ::MartenText::Renderable
+    include SignedGlobalId::HasIt
 
     field :id, :big_int, primary_key: true, auto: true
     # Polymorphic `to:` must list at least two types — Crystal would
@@ -33,5 +34,17 @@ module Books
     template_attributes :id, :name, :content, :to_html, :created_at, :updated_at
 
     db_index :markdown_record_idx, field_names: [:record_type, :record_id, :name]
+
+    # Look up the Markdown row attached to `record` under `attribute_name`.
+    # Mirrors Rails' `record.safe_markdown_attribute(attribute_name)` from
+    # writebook-rails' `lib/rails_ext/action_text_has_markdown.rb`. Used by
+    # the upload handler: an editor-driven file attach knows the host
+    # record (via signed gid) + the attribute name (e.g. "body"), and
+    # needs the Markdown row to attach files to.
+    def self.safe_attribute(record : Marten::DB::Model, attribute_name : String) : Markdown?
+      filter(record_type: record.class.name, record_id: record.pk!)
+        .filter(name: attribute_name)
+        .first
+    end
   end
 end

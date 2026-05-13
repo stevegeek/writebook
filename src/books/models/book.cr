@@ -2,6 +2,7 @@ module Books
   class Book < Marten::Model
     include Marten::Template::CanDefineTemplateAttributes
     include Accessable
+    include SignedGlobalId::HasIt
 
     THEMES = %w[black blue green magenta orange violet white]
 

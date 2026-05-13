@@ -4,6 +4,7 @@ module Books::Leafables
   # `large` variant computed at upload time.
   class Picture < Marten::Model
     include ::Books::Leafable
+    include ::Books::SignedGlobalId::HasIt
 
     field :id, :big_int, primary_key: true, auto: true
     field :caption, :string, max_size: 1024, blank: true, null: true
