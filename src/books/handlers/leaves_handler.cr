@@ -3,19 +3,16 @@ module Books
   # Calls leaf.trashed! (sets status: "trashed") and redirects to the book.
   class LeavesDestroyHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include BookScoped
 
     before_dispatch :require_authentication
+    before_dispatch :require_book
+    before_dispatch :ensure_editable
 
     def post
-      target_leaf = leaf
+      target_book = book!
+      target_leaf = Leaf.get(pk: params["id"]?, book_id: target_book.pk)
       return head :not_found if target_leaf.nil?
-
-      target_book = target_leaf.book
-      return head :not_found if target_book.nil?
-
-      unless target_book.editable?(current_user)
-        return head :forbidden
-      end
 
       target_leaf.trashed!
 
@@ -25,10 +22,6 @@ module Books
     # Only POST is allowed; everything else → 405
     def get
       head :method_not_allowed
-    end
-
-    private def leaf : Leaf?
-      Leaf.get(pk: params["id"]?, book_id: params["book_id"]?)
     end
   end
 
@@ -43,16 +36,14 @@ module Books
   # cookie (double-submit pattern) so the CSRF middleware is satisfied.
   class LeavesMovesHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include BookScoped
 
     before_dispatch :require_authentication
+    before_dispatch :require_book
+    before_dispatch :ensure_editable
 
     def post
-      target_book = book
-      return head :not_found if target_book.nil?
-
-      unless target_book.editable?(current_user)
-        return head :forbidden
-      end
+      target_book = book!
 
       # Parse id[] — multi-value param submitted as repeated keys
       raw_ids = request.data.fetch_all("id[]", nil)
@@ -78,10 +69,6 @@ module Books
 
     def get
       head :method_not_allowed
-    end
-
-    private def book : Book?
-      Book.get(pk: params["book_id"]?)
     end
   end
 end

@@ -4,20 +4,21 @@ module Books
   # GET /books/<book_id:int>/search?q=<terms>
   class BooksSearchesHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include BookScoped
+
+    before_dispatch :require_book
 
     def get
-      book = Book.get(pk: params["book_id"]?)
-      return respond("Not found", status: 404) if book.nil?
-
+      target_book = book!
       query = request.query_params["q"]?.try(&.strip)
       results = if query && !query.empty?
-        Searchable.search(query, book_id: book.pk!.to_i64)
+        Searchable.search(query, book_id: target_book.pk!.to_i64)
       else
         [] of NamedTuple(leaf: Leaf, title_match: String?, content_match: String?)
       end
 
       render("books/searches/create.html", context: {
-        book:      book,
+        book:      target_book,
         query:     query || "",
         results:   results,
         signed_in: signed_in?,

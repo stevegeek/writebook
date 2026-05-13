@@ -2,34 +2,31 @@ module Books
   # Sections — plain-text divider/heading leaves of a Book.
   class SectionsNewHandler < Marten::Handlers::Schema
     include ::Accounts::AuthenticationHelpers
+    include BookScoped
 
     before_dispatch :require_authentication
+    before_dispatch :require_book
+    before_dispatch :ensure_editable
 
     schema SectionSchema
     template_name "sections/new.html"
 
     def context
-      super.merge({"book" => book})
+      super.merge({"book" => book!})
     end
 
     def process_valid_schema
-      target_book = book
-      return respond("Book not found", status: 404) if target_book.nil?
-
+      target_book = book!
       title = schema.validated_data["title"].as(String).strip
       body = schema.validated_data["body"]?.as(String?) || ""
       theme = schema.validated_data["theme"]?.as(String?).presence
 
       Marten::DB::Connection.default.transaction do
         section = Leafables::Section.create!(body: body, theme: theme)
-        Leaf.create!(book: target_book, leafable: section, title: title, status: "active")
+        target_book.press(section, title: title)
       end
 
       redirect(Marten.routes.reverse("books:show", id: target_book.pk))
-    end
-
-    private def book : Book?
-      Book.get(pk: params["book_id"]?)
     end
   end
 
@@ -68,18 +65,19 @@ module Books
   class SectionsCreateHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
     include MartenTurbo::Handlers::Concerns::Streamable
+    include BookScoped
 
     before_dispatch :require_authentication
+    before_dispatch :require_book
+    before_dispatch :ensure_editable
 
     def post
-      target_book = book
-      return head :not_found if target_book.nil?
-      return head :forbidden unless target_book.editable?(current_user)
+      target_book = book!
 
       created_leaf = nil
       Marten::DB::Connection.default.transaction do
         section = Leafables::Section.create!(body: "")
-        created_leaf = Leaf.create!(book: target_book, leafable: section, title: "New section", status: "active")
+        created_leaf = target_book.press(section, title: "New section")
       end
 
       leaf = created_leaf.not_nil!
@@ -89,10 +87,6 @@ module Books
       else
         redirect(Marten.routes.reverse("books:show", id: target_book.pk))
       end
-    end
-
-    private def book : Book?
-      Book.get(pk: params["book_id"]?)
     end
   end
 

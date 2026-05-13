@@ -7,20 +7,21 @@ module Books
   #      transaction.
   class PicturesNewHandler < Marten::Handlers::Schema
     include ::Accounts::AuthenticationHelpers
+    include BookScoped
 
     before_dispatch :require_authentication
+    before_dispatch :require_book
+    before_dispatch :ensure_editable
 
     schema PictureSchema
     template_name "pictures/new.html"
 
     def context
-      super.merge({"book" => book})
+      super.merge({"book" => book!})
     end
 
     def process_valid_schema
-      target_book = book
-      return respond("Book not found", status: 404) if target_book.nil?
-
+      target_book = book!
       caption = (schema.validated_data["caption"]?.as(String?) || "").strip
       title = (schema.validated_data["title"]?.as(String?) || "").strip
       uploaded = schema.validated_data["image"]?.as(Marten::HTTP::UploadedFile?)
@@ -37,14 +38,10 @@ module Books
           )
         end
         leaf_title = title.presence || caption.presence || "Picture"
-        Leaf.create!(book: target_book, leafable: pic, title: leaf_title, status: "active")
+        target_book.press(pic, title: leaf_title)
       end
 
       redirect(Marten.routes.reverse("books:show", id: target_book.pk))
-    end
-
-    private def book : Book?
-      Book.get(pk: params["book_id"]?)
     end
   end
 
@@ -85,18 +82,19 @@ module Books
   class PicturesCreateHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
     include MartenTurbo::Handlers::Concerns::Streamable
+    include BookScoped
 
     before_dispatch :require_authentication
+    before_dispatch :require_book
+    before_dispatch :ensure_editable
 
     def post
-      target_book = book
-      return head :not_found if target_book.nil?
-      return head :forbidden unless target_book.editable?(current_user)
+      target_book = book!
 
       created_leaf = nil
       Marten::DB::Connection.default.transaction do
         picture = Leafables::Picture.create!
-        created_leaf = Leaf.create!(book: target_book, leafable: picture, title: "New picture", status: "active")
+        created_leaf = target_book.press(picture, title: "New picture")
       end
 
       leaf = created_leaf.not_nil!
@@ -106,10 +104,6 @@ module Books
       else
         redirect(Marten.routes.reverse("books:show", id: target_book.pk))
       end
-    end
-
-    private def book : Book?
-      Book.get(pk: params["book_id"]?)
     end
   end
 

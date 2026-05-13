@@ -5,34 +5,31 @@ module Books
   #   3. Create Leaf wrapping the Page, attached to the Book
   class PagesNewHandler < Marten::Handlers::Schema
     include ::Accounts::AuthenticationHelpers
+    include BookScoped
 
     before_dispatch :require_authentication
+    before_dispatch :require_book
+    before_dispatch :ensure_editable
 
     schema PageSchema
     template_name "pages/new.html"
 
     def context
-      super.merge({"book" => book})
+      super.merge({"book" => book!})
     end
 
     def process_valid_schema
-      target_book = book
-      return respond("Book not found", status: 404) if target_book.nil?
-
+      target_book = book!
       title = schema.validated_data["title"].as(String).strip
       body = schema.validated_data["body"]?.as(String?) || ""
 
       Marten::DB::Connection.default.transaction do
         page = Leafables::Page.create!
         page.body = body  # uses has_markdown setter — saves a Markdown row
-        Leaf.create!(book: target_book, leafable: page, title: title, status: "active")
+        target_book.press(page, title: title)
       end
 
       redirect(Marten.routes.reverse("books:show", id: target_book.pk))
-    end
-
-    private def book : Book?
-      Book.get(pk: params["book_id"]?)
     end
   end
 
@@ -111,13 +108,14 @@ module Books
   class PagesCreateHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
     include MartenTurbo::Handlers::Concerns::Streamable
+    include BookScoped
 
     before_dispatch :require_authentication
+    before_dispatch :require_book
+    before_dispatch :ensure_editable
 
     def post
-      target_book = book
-      return head :not_found if target_book.nil?
-      return head :forbidden unless target_book.editable?(current_user)
+      target_book = book!
 
       # Title / body / position carry over from a regular form submit (Rails
       # leafables_controller passes them through). Blanks fall back to the
@@ -154,10 +152,6 @@ module Books
       else
         redirect(Marten.routes.reverse("books:show", id: target_book.pk))
       end
-    end
-
-    private def book : Book?
-      Book.get(pk: params["book_id"]?)
     end
   end
 

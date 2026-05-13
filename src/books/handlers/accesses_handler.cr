@@ -4,12 +4,11 @@ module Books
   # POST /books/<book_id>/accesses — updates access and redirects to book show
   class AccessesHandler < Marten::Handler
     include ::Accounts::AuthenticationHelpers
+    include BookScoped
     include RequestParams
 
-    @book : Book? = nil
-
     before_dispatch :require_authentication
-    before_dispatch :load_book
+    before_dispatch :require_book
     before_dispatch :ensure_editable
 
     def get
@@ -17,6 +16,7 @@ module Books
     end
 
     def post
+      target_book = book!
       editor_ids = collect_ids("editor_ids")
       reader_ids = collect_ids("reader_ids")
 
@@ -30,44 +30,26 @@ module Books
       # so update_access sees the correct value when expanding readers.
       everyone_raw = request.data["everyone_access"]?.to_s
       everyone = everyone_raw == "1" || everyone_raw == "true"
-      if book.everyone_access != everyone
-        book.update!(everyone_access: everyone)
+      if target_book.everyone_access != everyone
+        target_book.update!(everyone_access: everyone)
       end
 
-      book.update_access(editor_ids: editor_ids, reader_ids: reader_ids)
+      target_book.update_access(editor_ids: editor_ids, reader_ids: reader_ids)
 
-      redirect(Marten.routes.reverse("books:show", id: book.pk!))
-    end
-
-    private def book : Book
-      @book.not_nil!
-    end
-
-    private def load_book : Marten::HTTP::Response?
-      @book = Book.get(pk: params["book_id"]?)
-      if @book.nil?
-        return head :not_found
-      end
-      nil
-    end
-
-    private def ensure_editable : Marten::HTTP::Response?
-      unless book.editable?(current_user)
-        return head :forbidden
-      end
-      nil
+      redirect(Marten.routes.reverse("books:show", id: target_book.pk!))
     end
 
     private def context_data
+      target_book = book!
       users = ::Accounts::User.active.ordered.to_a
 
       # Pre-compute sets so the template doesn't need to call methods with user args.
-      accesses = ::Accounts::Access.filter(book_id: book.pk!).to_a
+      accesses = ::Accounts::Access.filter(book_id: target_book.pk!).to_a
       editor_ids = accesses.select(&.editor?).compact_map { |a| pk_to_i64(a.user_id) }
       reader_ids = accesses.compact_map { |a| pk_to_i64(a.user_id) }
 
       {
-        book:       book,
+        book:       target_book,
         users:      users,
         editor_ids: editor_ids,
         reader_ids: reader_ids,
