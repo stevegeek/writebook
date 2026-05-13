@@ -28,6 +28,8 @@ dependencies:
     github: naqvis/crystal-vips
   goban:
     github: soya-daizu/goban
+  sanitize:
+    github: straight-shoota/sanitize
 
 development_dependencies:
   ameba:

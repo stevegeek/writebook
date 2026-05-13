@@ -16,15 +16,11 @@ require "../spec_helper"
 #     `title_match` / `content_match` strings with the `|safe` filter,
 #     trusting the index-time sanitization.
 #
-# Since there is no `sanitize_search_result` analog, we cover what does
-# exist on the Marten side:
-#   - the *query*-side sanitizer (`Searchable.sanitize_query`)
-#   - the *index*-time `sanitize` private helper (via a small reflection
-#     hook below), which is what enforces the "only safe stuff goes
-#     into FTS" invariant the Rails helper protected at render time.
-#
-# The four exact Rails assertions are kept as `pending` notes so the
-# porting gap stays visible.
+# The Marten port now ships `Books::HtmlScrubber.sanitize_search_result`
+# (in `src/books/html_scrubber.cr`) as the direct analog of the Rails
+# helper. `Searchable.search` runs the FTS5 highlight/snippet output
+# through it before returning, so even pre-sanitized index rows are
+# defended at render time as well.
 describe "Search sanitization (port of Rails SearchesHelper)" do
   describe "Books::Searchable.sanitize_query (input sanitizer)" do
     it "returns nil for nil input" do
@@ -49,29 +45,31 @@ describe "Search sanitization (port of Rails SearchesHelper)" do
     end
   end
 
-  pending "sanitize_search_result preserves mark tags" do
-    # FIXME(porting gap): Marten port has no `sanitize_search_result`
-    # helper. The Rails version stripped non-`<mark>` HTML from FTS
-    # snippet output at render time. The Marten port instead sanitizes
-    # at index time (see `Books::Searchable#sanitize`) and renders FTS
-    # output with `|safe`. Rewriting to a render-side helper would
-    # require a new template filter; not blocked on porting, but
-    # currently absent.
-  end
+  describe "Books::HtmlScrubber.sanitize_search_result" do
+    it "preserves <mark> tags" do
+      input = %(plain <mark>highlighted</mark> plain)
+      Books::HtmlScrubber.sanitize_search_result(input).should contain("<mark>highlighted</mark>")
+    end
 
-  pending "sanitize_search_result strips non-mark tags" do
-    # FIXME(porting gap): see above.
-  end
+    it "strips non-mark tags but keeps text content" do
+      input = %(<b>bold</b> <mark>match</mark> <script>alert(1)</script>)
+      out = Books::HtmlScrubber.sanitize_search_result(input)
+      out.should_not contain("<b>")
+      # libxml2-based sanitizer drops the <script> tag AND its content —
+      # stricter than Rails Loofah, which keeps the text. The visible
+      # "bold" stays because it lived outside the disallowed tag.
+      out.should_not contain("<script>")
+      out.should contain("bold")
+      out.should contain("<mark>match</mark>")
+    end
 
-  pending "sanitize_search_result encodes entities" do
-    # FIXME(porting gap): see above. Note that the Marten port also
-    # doesn't HTML-escape Tom & Jerry in snippet output, since FTS5
-    # produces the snippet from already-sanitized text and the template
-    # uses `|safe`. Equivalent behavior would need a Crystal template
-    # filter wrapping `Marten::Template::SafeString`.
-  end
+    it "encodes entities outside tags" do
+      Books::HtmlScrubber.sanitize_search_result("Tom & Jerry").should eq("Tom &amp; Jerry")
+    end
 
-  pending "sanitize_search_result strips attributes from mark tags" do
-    # FIXME(porting gap): see above.
+    it "strips attributes from mark tags" do
+      input = %(<mark class="evil" onclick="x">match</mark>)
+      Books::HtmlScrubber.sanitize_search_result(input).should eq("<mark>match</mark>")
+    end
   end
 end

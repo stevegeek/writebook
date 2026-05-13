@@ -101,6 +101,10 @@ shards:
     git: https://github.com/crystal-community/msgpack-crystal.git
     version: 1.3.5
 
+  sanitize:
+    git: https://github.com/straight-shoota/sanitize.git
+    version: 0.1.0+git.commit.c17d933fed22c6d3d615cca91a895166414389af
+
   selenium:
     git: https://github.com/crystal-loot/selenium.cr.git
     version: 0.12.1

@@ -97,10 +97,13 @@ module Books
       end
     end
 
+    # Mirrors Rails `sanitize_content(@edit.page.body.to_html)` / `sanitize_content(@leaf.page.body.to_html)`
+    # in pages/edits/show.html.erb — every revision body is scrubbed before
+    # display, in case the original markdown source contained dangerous HTML.
     private def render_leafable_html(leafable) : String
       case leafable
       when Leafables::Page
-        leafable.body.try(&.to_html) || ""
+        leafable.to_safe_html
       when Leafables::Section
         leafable.body_html
       when Leafables::Picture

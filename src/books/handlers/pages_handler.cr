@@ -57,7 +57,7 @@ module Books
         path: "/"
       )
 
-      rendered = page.body.try(&.to_html) || ""
+      rendered = page.to_safe_html
       render("pages/show.html", context: {
         leaf:          target_leaf,
         page:          page,

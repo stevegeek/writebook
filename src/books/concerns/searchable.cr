@@ -63,7 +63,11 @@ module Books
               title_match = rs.read(String?)
               content_match = rs.read(String?)
               leaf = Leaf.get(pk: leaf_id)
-              results << {leaf: leaf.not_nil!, title_match: title_match, content_match: content_match} if leaf
+              results << {
+                leaf:          leaf.not_nil!,
+                title_match:   title_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
+                content_match: content_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
+              } if leaf
             end
           end
         else
@@ -73,7 +77,11 @@ module Books
               title_match = rs.read(String?)
               content_match = rs.read(String?)
               leaf = Leaf.get(pk: leaf_id)
-              results << {leaf: leaf.not_nil!, title_match: title_match, content_match: content_match} if leaf
+              results << {
+                leaf:          leaf.not_nil!,
+                title_match:   title_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
+                content_match: content_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
+              } if leaf
             end
           end
         end
@@ -132,8 +140,11 @@ module Books
       end
     end
 
+    # Strip every HTML tag from text destined for the FTS index. Mirrors
+    # Rails Leaf::Searchable#sanitize_for_index (which uses
+    # Rails::Html::FullSanitizer.new.sanitize).
     private def sanitize(text : String) : String
-      text.gsub(/<[^>]+>/, " ").gsub(/\s+/, " ").strip
+      ::Books::HtmlScrubber.strip_all(text)
     end
   end
 end

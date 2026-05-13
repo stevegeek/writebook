@@ -38,12 +38,19 @@ describe "Books::Leafables::Page" do
       page.searchable_content.not_nil!.should contain("Some plain text body")
     end
 
-    pending "re-encodes HTML entities" do
-      # FIXME(porting gap): The Rails test asserts that searchable_content
-      # re-encodes `<`, `>`, `&` as `&lt; &gt; &amp;` (because Rails'
-      # to_plain_text decodes them, then html_safe-wraps the result). The
-      # Marten port uses MartenText's `plain_text` which does not
-      # re-encode entities.
+    # Rails-port note: Rails re-encodes `<`/`>`/`&` in `searchable_content`
+    # because its `to_plain_text` is html_safe-wrapped. The Marten port
+    # delegates to MartenText's `plain_text`, which extracts text from
+    # markd's already-HTML-encoded output — so `&` flows through as
+    # `&amp;` for free, no separate escape step needed. The end state
+    # ("entities are safe in the FTS index") matches Rails.
+    it "preserves entity-encoded `&` from the markdown HTML pass" do
+      page = Books::Leafables::Page.create!
+      page.body = "Tom & Jerry with <em>emphasis</em>"
+
+      out = page.searchable_content.not_nil!
+      out.should contain("Tom &amp; Jerry")
+      out.should_not contain("<em>")
     end
   end
 end

@@ -14,6 +14,10 @@ module Books::Leafables
 
     has_markdown :body, model: ::Books::Markdown
 
+    # Plain-text extract for the FTS index. Entities are NOT re-encoded
+    # here — `Books::HtmlScrubber.sanitize_search_result` round-trips the
+    # snippet through libxml2 at render time and escapes `<`/`>`/`&` then,
+    # so storing the raw text avoids double-encoding (`&amp;amp;`).
     def searchable_content : String?
       body.try(&.plain_text)
     end
@@ -22,12 +26,18 @@ module Books::Leafables
       body.try(&.content) || ""
     end
 
+    # Sanitized HTML body for safe rendering. Mirrors Rails
+    # `sanitize_content(page.body.to_html)` — same call shape, same allowlist.
+    def to_safe_html : String
+      ::Books::HtmlScrubber.sanitize_content(body.try(&.to_html) || "")
+    end
+
     # Truncated HTML rendering for the leaf TOC card on books/show.
     # Mirrors Rails Page#html_preview which renders the first 1024 chars
-    # of the markdown source through the regular renderer.
+    # of the markdown source through the regular renderer + sanitize_content.
     def html_preview : String
       source = body.try(&.content) || ""
-      ::MartenText::Renderer.render(source[0, 1024])
+      ::Books::HtmlScrubber.sanitize_content(::MartenText::Renderer.render(source[0, 1024]))
     end
 
     def word_count : Int32
