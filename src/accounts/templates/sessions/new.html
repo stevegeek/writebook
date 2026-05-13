@@ -2,6 +2,11 @@
 
 {% block title %}Sign in{% endblock %}
 
+{# Mirrors Rails sessions/new.html.erb's `turbo_page_requires_reload` — force #}
+{# a full reload here so a sign-out doesn't leave a cached signed-in page    #}
+{# visible to the next request from the same tab.                            #}
+{% block head %}{% turbo_page_requires_reload %}{% endblock %}
+
 {% block content %}
 <div class="panel shadow center margin-block-double {% if errors %}shake{% endif %}">
   <img src="{% asset 'images/writebook-icon.svg' %}" class="product__logo center colorize--black" width="130" height="130" alt="">
