@@ -269,10 +269,11 @@ module Books
 
       if request.turbo?
         frame_id = dom_id(book, "publication")
-        turbo_frame_replace(
-          frame_id,
-          partial: "books/publications/_publication.html",
-          locals: {book: book, editable: true, frame_id: frame_id},
+        # The partial renders its own <turbo-frame frame_id>, so for a
+        # turbo-frame navigation we just render the partial directly.
+        render(
+          "books/publications/_publication.html",
+          {book: book, editable: true, frame_id: frame_id},
         )
       else
         redirect(Marten.routes.reverse("books:show", id: book.pk!))
