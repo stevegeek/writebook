@@ -1,6 +1,7 @@
 require "marten"
 require "sqlite3"
 require "pg"
+require "./pg_ssl_connection_lost_patch"
 require "marten_auth"
 require "marten_turbo"
 require "marten_cable"

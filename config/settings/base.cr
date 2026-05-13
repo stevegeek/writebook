@@ -41,6 +41,13 @@ Marten.configure do |config|
         db.user = uri.user
         db.password = uri.password
         db.name = uri.path.lchop('/')
+        # PG over tailscale will reap idle connections. Retry past stale
+        # sockets, and keep a small warm pool to avoid TCP+TLS handshake on
+        # every request.
+        db.retry_attempts = 3
+        db.initial_pool_size = 2
+        db.max_idle_pool_size = 4
+        db.max_pool_size = 16
       when "sqlite", "sqlite3"
         db.backend = :sqlite
         db.name = uri.path.lchop('/').empty? ? Path["marten_writebook.db"].expand.to_s : uri.path.lchop('/')
