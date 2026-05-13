@@ -4,22 +4,10 @@
   <span class="btn btn--placeholder flex-item-justify-start"></span>
 
   {% if next_leaf %}
-    {% if next_leaf.leafable_type == "Books::Leafables::Picture" %}
-      <a href="{% url 'pictures:edit' id: next_leaf.id %}" class="btn txt-medium min-width">
-        <span class="overflow-ellipsis">Next: {{ next_leaf.title }}</span>
-        <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
-      </a>
-    {% elsif next_leaf.leafable_type == "Books::Leafables::Section" %}
-      <a href="{% url 'sections:edit' id: next_leaf.id %}" class="btn txt-medium min-width">
-        <span class="overflow-ellipsis">Next: {{ next_leaf.title }}</span>
-        <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
-      </a>
-    {% else %}
-      <a href="{% url 'pages:edit' id: next_leaf.id %}" class="btn txt-medium min-width">
-        <span class="overflow-ellipsis">Next: {{ next_leaf.title }}</span>
-        <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
-      </a>
-    {% endif %}
+    <a href="{% leafable_edit_url next_leaf %}" class="btn txt-medium min-width">
+      <span class="overflow-ellipsis">Next: {{ next_leaf.title }}</span>
+      <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+    </a>
   {% else %}
     <a href="{% url 'books:show' id: leaf.book_id %}" class="btn txt-medium">
       <span class="overflow-ellipsis">Table of contents</span>

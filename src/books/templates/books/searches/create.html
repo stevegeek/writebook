@@ -20,17 +20,15 @@
 
   <div class="search__results flex flex-column margin-block-start">
     {% for result in results %}
-      {# Show-link dispatch by concrete leafable type. Pictures aren't indexed (defensive only). #}
-      {% if result.leaf.picture %}
-        <a href="{% url 'pictures:show' id: result.leaf.id %}" class="search__result txt-ink" data-turbo-frame="_top">
-          <strong>{{ result.title_match|safe }}:</strong> {{ result.content_match|safe }}
-        </a>
-      {% elsif result.leaf.section %}
-        <a href="{% url 'books:show' id: book.id %}#leaf_{{ result.leaf.id }}" class="search__result txt-ink" data-turbo-frame="_top">
+      {# Sections aren't standalone-routable in the reading view (Rails uses #}
+      {# the same leafable_slug_path for both, but anchors-into-book-TOC for #}
+      {# sections); pages/pictures go to their own show page.                #}
+      {% if result.leaf.section %}
+        <a href="{% url 'books:show' id: book.id %}#{% dom_id result.leaf %}" class="search__result txt-ink" data-turbo-frame="_top">
           <strong>{{ result.title_match|safe }}:</strong> {{ result.content_match|safe }}
         </a>
       {% else %}
-        <a href="{% url 'pages:show' id: result.leaf.id %}" class="search__result txt-ink" data-turbo-frame="_top">
+        <a href="{% leafable_url result.leaf %}" class="search__result txt-ink" data-turbo-frame="_top">
           <strong>{{ result.title_match|safe }}:</strong> {{ result.content_match|safe }}
         </a>
       {% endif %}

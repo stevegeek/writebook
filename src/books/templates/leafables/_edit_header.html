@@ -7,22 +7,10 @@
   {# Previous leafable link — falls back to book TOC. Same url-dispatch as     #}
   {# the show-page header partial.                                              #}
   {% if previous_leaf %}
-    {% if previous_leaf.leafable_type == "Books::Leafables::Picture" %}
-      <a href="{% url 'pictures:edit' id: previous_leaf.id %}" class="btn">
-        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
-        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
-      </a>
-    {% elsif previous_leaf.leafable_type == "Books::Leafables::Section" %}
-      <a href="{% url 'sections:edit' id: previous_leaf.id %}" class="btn">
-        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
-        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
-      </a>
-    {% else %}
-      <a href="{% url 'pages:edit' id: previous_leaf.id %}" class="btn">
-        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
-        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
-      </a>
-    {% endif %}
+    <a href="{% leafable_edit_url previous_leaf %}" class="btn">
+      <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
+    </a>
   {% else %}
     <a href="{% url 'books:show' id: leaf.book_id %}" class="btn">
       <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">

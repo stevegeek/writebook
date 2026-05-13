@@ -1,6 +1,6 @@
 {# TOC leaf item in books/show. Rendered via {% for leaf in leaves %}{% include "leaves/_leaf.html" %}{% endfor %}. #}
 {# Mirrors Rails app/views/leaves/_leaf.html.erb. #}
-<li class="arrangement__item toc__leaf {% if leaf.page %}toc__leaf--page{% elsif leaf.section %}toc__leaf--section{% elsif leaf.picture %}toc__leaf--picture{% endif %}" id="{% dom_id leaf %}" data-id="{{ leaf.id }}" data-arrangement-target="item">
+<li class="arrangement__item toc__leaf toc__leaf--{% leafable_class leaf %}" id="{% dom_id leaf %}" data-id="{{ leaf.id }}" data-arrangement-target="item">
 
   <span class="btn btn--link arrangement__handle txt-small">
     <img src="{% asset 'images/handle.svg' %}" aria-hidden="true" width="24" height="24" alt="">
@@ -14,42 +14,16 @@
   <div class="toc__thumbnail {% if leaf.section %}{% if leaf.section.theme == 'dark' %}toc__thumbnail--dark{% endif %}{% endif %}">
     {% if editable %}
       {# edit-mode link #}
-      {% if leaf.picture %}
-        <a href="{% url 'pictures:edit' id: leaf.id %}" class="toc__link hide_from_reading_mode" data-turbo-frame="_top">
-          <span class="for-screen-reader">Edit {{ leaf.title }}</span>
-        </a>
-        <a href="{% url 'pictures:show' id: leaf.id %}" class="toc__link hide_from_edit_mode" data-turbo-frame="_top">
-          <span class="for-screen-reader">Open {{ leaf.title }}</span>
-        </a>
-      {% elsif leaf.section %}
-        <a href="{% url 'sections:edit' id: leaf.id %}" class="toc__link hide_from_reading_mode" data-turbo-frame="_top">
-          <span class="for-screen-reader">Edit {{ leaf.title }}</span>
-        </a>
-        <a href="{% url 'sections:show' id: leaf.id %}" class="toc__link hide_from_edit_mode" data-turbo-frame="_top">
-          <span class="for-screen-reader">Open {{ leaf.title }}</span>
-        </a>
-      {% else %}
-        <a href="{% url 'pages:edit' id: leaf.id %}" class="toc__link hide_from_reading_mode" data-turbo-frame="_top">
-          <span class="for-screen-reader">Edit {{ leaf.title }}</span>
-        </a>
-        <a href="{% url 'pages:show' id: leaf.id %}" class="toc__link hide_from_edit_mode" data-turbo-frame="_top">
-          <span class="for-screen-reader">Open {{ leaf.title }}</span>
-        </a>
-      {% endif %}
+      <a href="{% leafable_edit_url leaf %}" class="toc__link hide_from_reading_mode" data-turbo-frame="_top">
+        <span class="for-screen-reader">Edit {{ leaf.title }}</span>
+      </a>
+      <a href="{% leafable_url leaf %}" class="toc__link hide_from_edit_mode" data-turbo-frame="_top">
+        <span class="for-screen-reader">Open {{ leaf.title }}</span>
+      </a>
     {% else %}
-      {% if leaf.picture %}
-        <a href="{% url 'pictures:show' id: leaf.id %}" class="toc__link" data-turbo-frame="_top">
-          <span class="for-screen-reader">Open {{ leaf.title }}</span>
-        </a>
-      {% elsif leaf.section %}
-        <a href="{% url 'sections:show' id: leaf.id %}" class="toc__link" data-turbo-frame="_top">
-          <span class="for-screen-reader">Open {{ leaf.title }}</span>
-        </a>
-      {% else %}
-        <a href="{% url 'pages:show' id: leaf.id %}" class="toc__link" data-turbo-frame="_top">
-          <span class="for-screen-reader">Open {{ leaf.title }}</span>
-        </a>
-      {% endif %}
+      <a href="{% leafable_url leaf %}" class="toc__link" data-turbo-frame="_top">
+        <span class="for-screen-reader">Open {{ leaf.title }}</span>
+      </a>
     {% endif %}
 
     {# Body preview: section -> formatted body, page -> truncated rendered HTML, picture -> thumbnail. #}
@@ -67,42 +41,16 @@
   </div>
 
   {% if editable %}
-    {% if leaf.picture %}
-      <a href="{% url 'pictures:edit' id: leaf.id %}" class="toc__title min-width hide_from_reading_mode" data-turbo-frame="_top">
-        <span class="overflow-ellipsis">{{ leaf.title }}</span>
-      </a>
-      <a href="{% url 'pictures:show' id: leaf.id %}" class="toc__title min-width hide_from_edit_mode" data-turbo-frame="_top">
-        <span class="overflow-ellipsis">{{ leaf.title }}</span>
-      </a>
-    {% elsif leaf.section %}
-      <a href="{% url 'sections:edit' id: leaf.id %}" class="toc__title min-width hide_from_reading_mode" data-turbo-frame="_top">
-        <span class="overflow-ellipsis">{{ leaf.title }}</span>
-      </a>
-      <a href="{% url 'sections:show' id: leaf.id %}" class="toc__title min-width hide_from_edit_mode" data-turbo-frame="_top">
-        <span class="overflow-ellipsis">{{ leaf.title }}</span>
-      </a>
-    {% else %}
-      <a href="{% url 'pages:edit' id: leaf.id %}" class="toc__title min-width hide_from_reading_mode" data-turbo-frame="_top">
-        <span class="overflow-ellipsis">{{ leaf.title }}</span>
-      </a>
-      <a href="{% url 'pages:show' id: leaf.id %}" class="toc__title min-width hide_from_edit_mode" data-turbo-frame="_top">
-        <span class="overflow-ellipsis">{{ leaf.title }}</span>
-      </a>
-    {% endif %}
+    <a href="{% leafable_edit_url leaf %}" class="toc__title min-width hide_from_reading_mode" data-turbo-frame="_top">
+      <span class="overflow-ellipsis">{{ leaf.title }}</span>
+    </a>
+    <a href="{% leafable_url leaf %}" class="toc__title min-width hide_from_edit_mode" data-turbo-frame="_top">
+      <span class="overflow-ellipsis">{{ leaf.title }}</span>
+    </a>
   {% else %}
-    {% if leaf.picture %}
-      <a href="{% url 'pictures:show' id: leaf.id %}" class="toc__title min-width" data-turbo-frame="_top">
-        <span class="overflow-ellipsis">{{ leaf.title }}</span>
-      </a>
-    {% elsif leaf.section %}
-      <a href="{% url 'sections:show' id: leaf.id %}" class="toc__title min-width" data-turbo-frame="_top">
-        <span class="overflow-ellipsis">{{ leaf.title }}</span>
-      </a>
-    {% else %}
-      <a href="{% url 'pages:show' id: leaf.id %}" class="toc__title min-width" data-turbo-frame="_top">
-        <span class="overflow-ellipsis">{{ leaf.title }}</span>
-      </a>
-    {% endif %}
+    <a href="{% leafable_url leaf %}" class="toc__title min-width" data-turbo-frame="_top">
+      <span class="overflow-ellipsis">{{ leaf.title }}</span>
+    </a>
   {% endif %}
 
   <span class="toc__bookmark">

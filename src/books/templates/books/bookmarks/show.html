@@ -1,14 +1,8 @@
 <turbo-frame id="{% dom_id book %}_bookmark">
   {% if leaf %}
-    {% if leaf.leafable_type == "Books::Leafables::Picture" %}
-      <a href="{% url 'pictures:show' id: leaf.id %}" class="bookmark__link">
-        <span class="for-screen-reader">Bookmark: Resume reading {{ book.title }}</span>
-      </a>
-    {% else %}
-      <a href="{% url 'pages:show' id: leaf.id %}" class="bookmark__link">
-        <span class="for-screen-reader">Bookmark: Resume reading {{ book.title }}</span>
-      </a>
-    {% endif %}
+    <a href="{% leafable_url leaf %}" class="bookmark__link">
+      <span class="for-screen-reader">Bookmark: Resume reading {{ book.title }}</span>
+    </a>
     <span class="bookmark" style="--progress: {{ leaf.position_as_percentage }}%">
       <div class="flex align-center">
         <span class="bookmark__icon">

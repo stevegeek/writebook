@@ -32,7 +32,7 @@
 
   {# Start-reading button — first active leaf in the book. Hidden until JS reveals; #}
   {# matches Rails' link_to_first_leafable which only renders when leaves exist.    #}
-  {% for leaf in leaves %}{% if loop.first? %}{% if leaf.picture %}<a href="{% url 'pictures:show' id: leaf.id %}"{% elsif leaf.section %}<a href="{% url 'sections:show' id: leaf.id %}"{% else %}<a href="{% url 'pages:show' id: leaf.id %}"{% endif %} class="disable-when-arranging" hidden data-controller="hotkey" data-action="keydown.right@document->hotkey#click touch:swipe-right@window->hotkey#click">
+  {% for leaf in leaves %}{% if loop.first? %}<a href="{% leafable_url leaf %}" class="disable-when-arranging" hidden data-controller="hotkey" data-action="keydown.right@document->hotkey#click touch:swipe-right@window->hotkey#click">
     <span class="btn">
       <img src="{% asset 'images/arrow-right.svg' %}" aria-hidden="true" width="24" height="24" alt="">
       <span class="for-screen-reader">Start reading</span>

@@ -13,28 +13,12 @@
 
   {# Previous leafable link — falls back to book TOC when first leaf. #}
   {% if previous_leaf %}
-    {% if previous_leaf.leafable_type == "Books::Leafables::Picture" %}
-      <a href="{% url 'pictures:show' id: previous_leaf.id %}" class="btn"
-         data-controller="hotkey"
-         data-action="keydown.left@document->hotkey#click touch:swipe-left@window->hotkey#click">
-        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
-        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
-      </a>
-    {% elsif previous_leaf.leafable_type == "Books::Leafables::Section" %}
-      <a href="{% url 'sections:show' id: previous_leaf.id %}" class="btn"
-         data-controller="hotkey"
-         data-action="keydown.left@document->hotkey#click touch:swipe-left@window->hotkey#click">
-        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
-        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
-      </a>
-    {% else %}
-      <a href="{% url 'pages:show' id: previous_leaf.id %}" class="btn"
-         data-controller="hotkey"
-         data-action="keydown.left@document->hotkey#click touch:swipe-left@window->hotkey#click">
-        <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
-        <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
-      </a>
-    {% endif %}
+    <a href="{% leafable_url previous_leaf %}" class="btn"
+       data-controller="hotkey"
+       data-action="keydown.left@document->hotkey#click touch:swipe-left@window->hotkey#click">
+      <img src="{% asset 'images/arrow-left.svg' %}" aria-hidden="true" width="24" height="24" alt="">
+      <span class="for-screen-reader">Previous: {{ previous_leaf.title }}</span>
+    </a>
   {% else %}
     <a href="{% url 'books:show' id: book.id %}" class="btn"
        data-controller="hotkey"
