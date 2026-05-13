@@ -56,103 +56,12 @@
     <link rel="stylesheet" href="{% asset 'stylesheets/translations.css' %}">
     <link rel="stylesheet" href="{% asset 'stylesheets/utilities.css' %}">
 
-    <script type="importmap">
-    {
-      "imports": {
-        "@hotwired/turbo": "https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.13/dist/turbo.es2017-esm.js",
-        "@hotwired/stimulus": "https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2.2/dist/stimulus.js",
-        "@rails/actioncable": "https://cdn.jsdelivr.net/npm/@rails/actioncable@8.0.0/+esm",
-        "@rails/request.js": "https://cdn.jsdelivr.net/npm/@rails/request.js@0.0.11/+esm",
-        "house": "https://cdn.jsdelivr.net/npm/house@0.1.6/+esm",
-
-        "actions/scroll_into_view": "{% asset 'javascript/actions/scroll_into_view.js' %}",
-
-        "helpers/cookie_helpers": "{% asset 'javascript/helpers/cookie_helpers.js' %}",
-        "helpers/form_helpers": "{% asset 'javascript/helpers/form_helpers.js' %}",
-        "helpers/reading_progress_helpers": "{% asset 'javascript/helpers/reading_progress_helpers.js' %}",
-        "helpers/timing_helpers": "{% asset 'javascript/helpers/timing_helpers.js' %}",
-
-        "controllers/arrangement_controller": "{% asset 'javascript/controllers/arrangement_controller.js' %}",
-        "controllers/auto_submit_controller": "{% asset 'javascript/controllers/auto_submit_controller.js' %}",
-        "controllers/autoremove_controller": "{% asset 'javascript/controllers/autoremove_controller.js' %}",
-        "controllers/autosave_controller": "{% asset 'javascript/controllers/autosave_controller.js' %}",
-        "controllers/autoselect_controller": "{% asset 'javascript/controllers/autoselect_controller.js' %}",
-        "controllers/copy_to_clipboard_controller": "{% asset 'javascript/controllers/copy_to_clipboard_controller.js' %}",
-        "controllers/dependent_checkbox_controller": "{% asset 'javascript/controllers/dependent_checkbox_controller.js' %}",
-        "controllers/dialog_controller": "{% asset 'javascript/controllers/dialog_controller.js' %}",
-        "controllers/edit_mode_controller": "{% asset 'javascript/controllers/edit_mode_controller.js' %}",
-        "controllers/form_controller": "{% asset 'javascript/controllers/form_controller.js' %}",
-        "controllers/fullscreen_controller": "{% asset 'javascript/controllers/fullscreen_controller.js' %}",
-        "controllers/hotkey_controller": "{% asset 'javascript/controllers/hotkey_controller.js' %}",
-        "controllers/lightbox_controller": "{% asset 'javascript/controllers/lightbox_controller.js' %}",
-        "controllers/popover_controller": "{% asset 'javascript/controllers/popover_controller.js' %}",
-        "controllers/reading_progress_controller": "{% asset 'javascript/controllers/reading_progress_controller.js' %}",
-        "controllers/reading_tracker_controller": "{% asset 'javascript/controllers/reading_tracker_controller.js' %}",
-        "controllers/scroll_to_highlight_controller": "{% asset 'javascript/controllers/scroll_to_highlight_controller.js' %}",
-        "controllers/sidebar_controller": "{% asset 'javascript/controllers/sidebar_controller.js' %}",
-        "controllers/toc_view_controller": "{% asset 'javascript/controllers/toc_view_controller.js' %}",
-        "controllers/touch_controller": "{% asset 'javascript/controllers/touch_controller.js' %}",
-        "controllers/upload_preview_controller": "{% asset 'javascript/controllers/upload_preview_controller.js' %}",
-        "controllers/web_share_controller": "{% asset 'javascript/controllers/web_share_controller.js' %}"
-      }
-    }
-    </script>
-    <script type="module">
-      import * as Turbo from "@hotwired/turbo";
-      import { Application } from "@hotwired/stimulus";
-      window.Turbo = Turbo;
-      const Stimulus = Application.start();
-      Stimulus.debug = false;
-      window.Stimulus = Stimulus;
-
-      import "actions/scroll_into_view";
-
-      import ArrangementController from "controllers/arrangement_controller";
-      import AutoSubmitController from "controllers/auto_submit_controller";
-      import AutoremoveController from "controllers/autoremove_controller";
-      import AutosaveController from "controllers/autosave_controller";
-      import AutoselectController from "controllers/autoselect_controller";
-      import CopyToClipboardController from "controllers/copy_to_clipboard_controller";
-      import DependentCheckboxController from "controllers/dependent_checkbox_controller";
-      import DialogController from "controllers/dialog_controller";
-      import EditModeController from "controllers/edit_mode_controller";
-      import FormController from "controllers/form_controller";
-      import FullscreenController from "controllers/fullscreen_controller";
-      import HotkeyController from "controllers/hotkey_controller";
-      import LightboxController from "controllers/lightbox_controller";
-      import PopoverController from "controllers/popover_controller";
-      import ReadingProgressController from "controllers/reading_progress_controller";
-      import ReadingTrackerController from "controllers/reading_tracker_controller";
-      import ScrollToHighlightController from "controllers/scroll_to_highlight_controller";
-      import SidebarController from "controllers/sidebar_controller";
-      import TocViewController from "controllers/toc_view_controller";
-      import TouchController from "controllers/touch_controller";
-      import UploadPreviewController from "controllers/upload_preview_controller";
-      import WebShareController from "controllers/web_share_controller";
-
-      Stimulus.register("arrangement", ArrangementController);
-      Stimulus.register("auto-submit", AutoSubmitController);
-      Stimulus.register("autoremove", AutoremoveController);
-      Stimulus.register("autosave", AutosaveController);
-      Stimulus.register("autoselect", AutoselectController);
-      Stimulus.register("copy-to-clipboard", CopyToClipboardController);
-      Stimulus.register("dependent-checkbox", DependentCheckboxController);
-      Stimulus.register("dialog", DialogController);
-      Stimulus.register("edit-mode", EditModeController);
-      Stimulus.register("form", FormController);
-      Stimulus.register("fullscreen", FullscreenController);
-      Stimulus.register("hotkey", HotkeyController);
-      Stimulus.register("lightbox", LightboxController);
-      Stimulus.register("popover", PopoverController);
-      Stimulus.register("reading-progress", ReadingProgressController);
-      Stimulus.register("reading-tracker", ReadingTrackerController);
-      Stimulus.register("scroll-to-highlight", ScrollToHighlightController);
-      Stimulus.register("sidebar", SidebarController);
-      Stimulus.register("toc-view", TocViewController);
-      Stimulus.register("touch", TouchController);
-      Stimulus.register("upload-preview", UploadPreviewController);
-      Stimulus.register("web-share", WebShareController);
-    </script>
+    {# Importmap + module entrypoint. Mirrors Rails' `javascript_importmap_tags`. #}
+    {# Pin list lives in config/initializers/importmap.cr; the entrypoint        #}
+    {# (`src/assets/javascript/application.js`) boots Turbo + Stimulus and       #}
+    {# auto-loads every `controllers/*_controller.js` via marten-stimulus's      #}
+    {# `eagerLoadControllersFrom`.                                                #}
+    {% importmap %}
   </head>
 
   <body data-controller="fullscreen lightbox touch">

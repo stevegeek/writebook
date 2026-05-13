@@ -30,6 +30,8 @@ dependencies:
     github: soya-daizu/goban
   sanitize:
     github: straight-shoota/sanitize
+  marten_stimulus:
+    github: treagod/marten-stimulus
 
 development_dependencies:
   ameba:

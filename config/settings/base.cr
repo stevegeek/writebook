@@ -4,6 +4,8 @@ Marten.configure do |config|
 
   config.installed_apps = [
     MartenAuth::App,
+    MartenImportmap::App,
+    MartenStimulus::App,
     Accounts::App,
     Books::App,
     MartenTurbo::App,
