@@ -76,20 +76,6 @@ module Accounts
     end
   end
 
-  # POST /account/join_codes — admin-only; regenerates the join code.
-  class JoinCodesCreateHandler < Marten::Handler
-    include AuthenticationHelpers
-    include Authorization
-
-    before_dispatch :require_authentication
-    before_dispatch :ensure_can_administer
-
-    def post
-      Account.first!.reset_join_code!
-      redirect(Marten.routes.reverse("accounts:users_index"))
-    end
-  end
-
   # GET /join/<code>  — public sign-up form (unauthed; validates join code).
   # POST /join/<code> — create user, sign in, redirect to root.
   class UsersNewHandler < Marten::Handlers::Schema
