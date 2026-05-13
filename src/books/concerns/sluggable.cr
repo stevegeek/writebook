@@ -1,12 +1,14 @@
 module Books
   # Slug helpers shared between models that have a `slug` string field.
-  # Concern macros that try to register Marten lifecycle callbacks (e.g.
-  # `before_validation`) don't propagate cleanly through `macro included`
-  # — Crystal's macro scoping looks up class-level constants like
-  # `VALIDATION_CALLBACKS` lexically, and they aren't visible from inside
-  # the concern module. So we expose helper methods only; each host model
-  # declares its own `before_validation :populate_slug` and calls these.
-  module SluggableHelpers
+  # Mirrors the role of Rails' `Book::Sluggable` concern, but with a
+  # different shape: Marten/Crystal's macro scoping doesn't let `macro
+  # included` register host-class lifecycle callbacks (e.g.
+  # `before_validation`) reliably — class-level constants like
+  # `VALIDATION_CALLBACKS` resolve lexically inside the concern and
+  # stay invisible from the host. So this module exposes helper methods
+  # only; each host model declares its own `before_validation
+  # :populate_slug` and calls these to do the work.
+  module Sluggable
     extend self
 
     def parameterize(value : String) : String

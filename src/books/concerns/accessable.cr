@@ -6,7 +6,9 @@ module Books
   module Accessable
     macro included
       scope :with_everyone_access { filter(everyone_access: true) }
-      scope :published { filter(published: true) }
+      # Note: `scope :published` lives on the host model (Book) — it isn't an
+      # access-control concept, it's a book-state one. Rails Writebook keeps
+      # it on the Book class itself for the same reason.
 
       # Books visible to the given user (or to no-one if anonymous): direct
       # accesses OR published. Marten's QuerySet has no `union` operator,

@@ -43,12 +43,6 @@ module Books
       status == "trashed"
     end
 
-    def self.with_leafables
-      # Marten's `prefetch` doesn't work directly with polymorphic, so we
-      # leave this as a no-op placeholder. Lookups happen lazily.
-      all
-    end
-
     def all_positioned_siblings
       book!.leaves.filter(status: "active").order(:position_score, :id)
     end
