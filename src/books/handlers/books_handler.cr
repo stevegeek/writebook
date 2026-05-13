@@ -172,8 +172,14 @@ module Books
       pages = nil
       cover = nil
 
+      # Operation order matters: `.with_leafables` must be the LAST queryset
+      # call before `.to_a`. Marten's `RelatedQuerySet#clone` does not preserve
+      # `prefetched_relations`, so any chained method after `.with_leafables`
+      # (like `.order`) silently strips the prefetch and `leaf.leafable`
+      # degrades to one DB hit per leaf. See
+      # lib/marten/src/marten/db/model/querying.cr:1191.
       leaves_ms = Time.measure {
-        leaves = book.leaves.active.with_leafables.order(:position_score, :id).to_a
+        leaves = book.leaves.active.order(:position_score, :id).with_leafables.to_a
       }.total_milliseconds
 
       # Collapse N per-page markdown SELECTs into one IN-clause query.
