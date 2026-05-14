@@ -147,7 +147,10 @@ module Books
       ProfileLog.checkpoint("create_txn") do
         Marten::DB::Connection.default.transaction do
           page = ProfileLog.checkpoint("page.create") { Leafables::Page.create! }
-          ProfileLog.checkpoint("page.body=") { page.body = submitted_body || "" }
+          # Page was just created — `body =` would issue a wasted SELECT
+          # for a markdown row that can't exist yet. Skip it via the
+          # marten-text `create_<name>!` helper (one INSERT, no SELECT).
+          ProfileLog.checkpoint("page.create_body!") { page.create_body!(submitted_body || "") }
           created_leaf = ProfileLog.checkpoint("book.press") do
             target_book.press(page, title: submitted_title || "New page")
           end
