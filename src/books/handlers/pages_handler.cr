@@ -41,10 +41,10 @@ module Books
 
     def get
       target_leaf = leaf!
-      page = target_leaf.leafable.try(&.as?(Leafables::Page))
+      page = ProfileLog.checkpoint("leafable") { target_leaf.leafable.try(&.as?(Leafables::Page)) }
       return respond("Not a page", status: 404) if page.nil?
 
-      target_book = book!
+      target_book = ProfileLog.checkpoint("book") { book! }
 
       # Record reading progress cookie — used by the bookmark resume feature
       request.cookies.set(
@@ -54,20 +54,28 @@ module Books
         path: "/"
       )
 
-      rendered = page.to_safe_html
-      render("pages/show.html", context: {
-        leaf:          target_leaf,
-        page:          page,
-        book:          target_book,
-        leaves:        sorted_active_leaves,
-        previous_leaf: previous_leaf,
-        next_leaf:     next_leaf,
-        rendered_html: rendered,
-        signed_in:     signed_in?,
-        editable:      target_book.editable?(current_user),
-        edit_url:      Marten.routes.reverse("pages:edit", id: target_leaf.pk!),
-        search:        request.query_params["search"]?.try(&.strip).presence,
-      })
+      # `to_safe_html` triggers `page.body` (markdown SELECT) plus the
+      # Markd -> tartrazine render pipeline; split into its own checkpoint
+      # so we can tell DB-wait apart from CPU-bound rendering.
+      rendered = ProfileLog.checkpoint("page.to_safe_html") { page.to_safe_html }
+      leaves = ProfileLog.checkpoint("sorted_active_leaves") { sorted_active_leaves }
+      editable = ProfileLog.checkpoint("editable?") { target_book.editable?(current_user) }
+
+      ProfileLog.checkpoint("render") do
+        render("pages/show.html", context: {
+          leaf:          target_leaf,
+          page:          page,
+          book:          target_book,
+          leaves:        leaves,
+          previous_leaf: previous_leaf,
+          next_leaf:     next_leaf,
+          rendered_html: rendered,
+          signed_in:     signed_in?,
+          editable:      editable,
+          edit_url:      Marten.routes.reverse("pages:edit", id: target_leaf.pk!),
+          search:        request.query_params["search"]?.try(&.strip).presence,
+        })
+      end
     end
   end
 

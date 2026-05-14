@@ -14,6 +14,10 @@ Marten.configure do |config|
   # MartenAuth::Middleware reads the user-id from the session and attaches it
   # to the request as `request.user_id`. It MUST come after Session.
   config.middleware = [
+    # ProfileLogMiddleware records total wall time + handler checkpoints
+    # when PROFILE=1 is set. No-op (one branch) otherwise. Must be first
+    # so the recorded total includes every other middleware's time.
+    ProfileLogMiddleware,
     Marten::Middleware::Session,
     MartenAuth::Middleware,
     Marten::Middleware::Flash,

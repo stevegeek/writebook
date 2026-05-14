@@ -167,16 +167,22 @@ module Books
 
     private def inject_extras : Nil
       book = record
-      leaves = book.leaves.active.with_leafables.order(:position_score, :id).to_a
+      leaves = ProfileLog.checkpoint("leaves_load") do
+        book.leaves.active.with_leafables.order(:position_score, :id).to_a
+      end
 
       # Collapse N per-page markdown SELECTs into one IN-clause query.
       # Mirrors Rails' `includes(leafables: :body)` preloader.
-      Leafables::Page.preload_body(leaves.compact_map(&.page))
+      ProfileLog.checkpoint("preload_bodies") do
+        Leafables::Page.preload_body(leaves.compact_map(&.page))
+      end
 
       context[:leaves] = leaves
       context[:signed_in] = signed_in?
-      context[:editable] = book.editable?(current_user)
-      context[:cover] = MartenStorages::Service.find_one(model: Attachment, record: book, name: "cover")
+      context[:editable] = ProfileLog.checkpoint("editable?") { book.editable?(current_user) }
+      context[:cover] = ProfileLog.checkpoint("cover") do
+        MartenStorages::Service.find_one(model: Attachment, record: book, name: "cover")
+      end
       # Used by books/publications/_publication.html for its own {% turbo_frame %}.
       context[:frame_id] = dom_id(book, "publication")
     end
