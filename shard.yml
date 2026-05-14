@@ -8,8 +8,13 @@ version: 0.1.0
 # the same name at ../marten-src.
 dependencies:
   marten:
-    github: stevegeek/marten
-    branch: main
+    github: martenframework/marten
+    # Pinned to a specific commit so a stale `shard.lock` can't quietly
+    # roll back to a pre-fix version. We rely on the RelatedSet /
+    # ManyToManySet clone fix that landed in martenframework/marten#364
+    # (commit 9c853f0); cce9ac8 is the latest main that includes it.
+    # Bump explicitly when newer upstream commits are needed.
+    commit: "cce9ac8"
   marten_delegated_type:
     github: stevegeek/marten-delegated-type
   marten_text:
