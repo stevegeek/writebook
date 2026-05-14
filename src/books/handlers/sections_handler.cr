@@ -117,7 +117,7 @@ module Books
         leaf:          target_leaf,
         section:       section,
         book:          target_book,
-        leaves:        active_leaves.order(:position_score, :id).to_a,
+        leaves:        active_leaves.prefetch(:leafable).order(:position_score, :id).to_a,
         previous_leaf: previous_leaf,
         next_leaf:     next_leaf,
         signed_in:     signed_in?,
@@ -185,7 +185,7 @@ module Books
       target_leaf = leaf
       return if target_leaf.nil?
       context[:book] = book!
-      context[:leaves] = active_leaves.order(:position_score, :id).to_a
+      context[:leaves] = active_leaves.prefetch(:leafable).order(:position_score, :id).to_a
       context[:editable] = book!.editable?(current_user)
       # Sections render through pages:show in reading mode (Rails uses the same      #
       # leafable_slug_path for both); the edit-mode toggle on a section's edit page  #
