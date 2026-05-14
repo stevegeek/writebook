@@ -46,12 +46,21 @@ Marten.configure do |config|
         db.password = uri.password
         db.name = uri.path.lchop('/')
         # PG over tailscale will reap idle connections. Retry past stale
-        # sockets, and keep a small warm pool to avoid TCP+TLS handshake on
-        # every request.
+        # sockets, and pre-warm a full pool to avoid the ~1s TCP+TLS
+        # handshake whenever crystal-db has to grow the pool under load.
+        #
+        # ProfileLog data from a 30-VU bench showed the heavy-tail
+        # outliers (~1100ms) coincided with `pool_wait_max ≈ 1000ms` on
+        # a single db.open call — that's the cost of establishing a
+        # fresh connection over the tailscale hop. Pre-creating every
+        # connection at boot kills that spike; raising max_pool_size
+        # well above the steady-state in-flight query count (~6 per
+        # request × 30 concurrent VUs / 16 slots ≈ 11x oversubscription
+        # before the change) kills the ~200ms steady-state queue tail.
         db.retry_attempts = 3
-        db.initial_pool_size = 2
-        db.max_idle_pool_size = 4
-        db.max_pool_size = 16
+        db.initial_pool_size = 16
+        db.max_idle_pool_size = 16
+        db.max_pool_size = 32
       when "sqlite", "sqlite3"
         db.backend = :sqlite
         db.name = uri.path.lchop('/').empty? ? Path["marten_writebook.db"].expand.to_s : uri.path.lchop('/')
