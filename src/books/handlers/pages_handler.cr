@@ -123,29 +123,35 @@ module Books
     before_dispatch :ensure_editable
 
     def post
-      target_book = book!
+      target_book = ProfileLog.checkpoint("book") { book! }
 
-      # Title / body / position carry over from a regular form submit (Rails
-      # leafables_controller passes them through). Blanks fall back to the
-      # inline-create defaults — the user can rename later in the edit UI.
-      # `request.data` raises on no/garbled body (e.g. the inline "+ Page"
-      # turbo POST sends none); treat that as no params provided.
-      submitted_title, submitted_body, position = begin
-        data = request.data
-        {
-          data["title"]?.try(&.to_s).presence,
-          data["body"]?.try(&.to_s),
-          data["position"]?.try(&.to_s).try(&.to_i?),
-        }
-      rescue
-        {nil, nil, nil}
+      submitted_title, submitted_body, position = ProfileLog.checkpoint("parse_params") do
+        # Title / body / position carry over from a regular form submit (Rails
+        # leafables_controller passes them through). Blanks fall back to the
+        # inline-create defaults — the user can rename later in the edit UI.
+        # `request.data` raises on no/garbled body (e.g. the inline "+ Page"
+        # turbo POST sends none); treat that as no params provided.
+        begin
+          data = request.data
+          {
+            data["title"]?.try(&.to_s).presence,
+            data["body"]?.try(&.to_s),
+            data["position"]?.try(&.to_s).try(&.to_i?),
+          }
+        rescue
+          {nil, nil, nil}
+        end
       end
 
       created_leaf = nil
-      Marten::DB::Connection.default.transaction do
-        page = Leafables::Page.create!
-        page.body = submitted_body || ""
-        created_leaf = target_book.press(page, title: submitted_title || "New page")
+      ProfileLog.checkpoint("create_txn") do
+        Marten::DB::Connection.default.transaction do
+          page = ProfileLog.checkpoint("page.create") { Leafables::Page.create! }
+          ProfileLog.checkpoint("page.body=") { page.body = submitted_body || "" }
+          created_leaf = ProfileLog.checkpoint("book.press") do
+            target_book.press(page, title: submitted_title || "New page")
+          end
+        end
       end
 
       leaf = created_leaf.not_nil!
@@ -153,12 +159,14 @@ module Books
       # supplies a `position`, the just-created leaf jumps there. Rails'
       # acts_as_list position param is 1-indexed; Marten's Positionable
       # move_to_position is 0-indexed (see positionable_spec). Translate.
-      leaf.move_to_position(position - 1) if position
+      ProfileLog.checkpoint("move_to_position") { leaf.move_to_position(position - 1) } if position
 
-      if request.turbo?
-        turbo_stream("books/leafable_create.turbo_stream.html", {"leaf" => leaf})
-      else
-        redirect(Marten.routes.reverse("books:show", id: target_book.pk))
+      ProfileLog.checkpoint("render") do
+        if request.turbo?
+          turbo_stream("books/leafable_create.turbo_stream.html", {"leaf" => leaf})
+        else
+          redirect(Marten.routes.reverse("books:show", id: target_book.pk))
+        end
       end
     end
   end
@@ -189,30 +197,26 @@ module Books
     end
 
     def process_valid_schema
-      target_leaf = leaf
-      target_page = page
+      target_leaf = ProfileLog.checkpoint("leaf") { leaf }
+      target_page = ProfileLog.checkpoint("page") { page }
       return respond("Not found", status: 404) if target_leaf.nil? || target_page.nil?
 
       title = schema.validated_data["title"].as(String).strip
       body = schema.validated_data["body"]?.as(String?) || ""
 
-      Marten::DB::Connection.default.transaction do
-        target_page.body = body
-        target_leaf.update!(title: title)
+      ProfileLog.checkpoint("save_txn") do
+        Marten::DB::Connection.default.transaction do
+          ProfileLog.checkpoint("page.body=") { target_page.body = body }
+          ProfileLog.checkpoint("leaf.update!") { target_leaf.update!(title: title) }
+        end
       end
 
       # Real-time "user X is editing" broadcast — mirrors Rails'
-      # LeafablesController#broadcast_being_edited_indicator. Sends the
-      # `_being_edited_by` partial to the per-leaf channel that all other
-      # viewers of this leaf are subscribed to via the indicator partial.
-      broadcast_being_edited(target_leaf)
+      # LeafablesController#broadcast_being_edited_indicator.
+      ProfileLog.checkpoint("broadcast") { broadcast_being_edited(target_leaf) }
 
       # Autosaves are PATCHy — Rails responds with `head :no_content` on the
-      # html format. Marten's Schema handler ordinarily redirects to a
-      # success URL after a valid POST. Detect the autosave / fetch case
-      # (request from `@rails/request.js` sends Accept: text/html and
-      # X-Requested-With: XMLHttpRequest) and return 204 so the editor stays
-      # on the edit page rather than navigating away mid-typing.
+      # html format.
       if request.headers["X-Requested-With"]? == "XMLHttpRequest" || request.turbo?
         return head :no_content
       end

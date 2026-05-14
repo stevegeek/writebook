@@ -10,11 +10,13 @@ module Books
     before_dispatch :ensure_editable
 
     def post
-      target_book = book!
-      target_leaf = Leaf.get(pk: params["id"]?, book_id: target_book.pk)
+      target_book = ProfileLog.checkpoint("book") { book! }
+      target_leaf = ProfileLog.checkpoint("leaf.get") do
+        Leaf.get(pk: params["id"]?, book_id: target_book.pk)
+      end
       return head :not_found if target_leaf.nil?
 
-      target_leaf.trashed!
+      ProfileLog.checkpoint("leaf.trashed!") { target_leaf.trashed! }
 
       redirect(Marten.routes.reverse("books:show", id: target_book.pk))
     end
