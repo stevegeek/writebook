@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Pull latest main, build release binary, restart the writebook service.
+# Usage: bin/deploy            # pull + build + restart
+#        bin/deploy --no-pull  # skip git pull (rebuild current checkout)
+#
+# Env:
+#   MT=1                       # build with -Dpreview_mt (multithreaded runtime)
+#   CRYSTAL_WORKERS=N          # worker fiber threads at runtime (default 4)
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+if [[ "${1:-}" != "--no-pull" ]]; then
+  echo "==> git pull --ff-only"
+  git pull --ff-only
+fi
+
+build_flags=(--release)
+if [[ "${MT:-0}" == "1" ]]; then
+  build_flags+=(-Dpreview_mt)
+  echo "==> crystal build (release, preview_mt)"
+else
+  echo "==> crystal build (release)"
+fi
+crystal build src/server.cr -o bin/server "${build_flags[@]}"
+
+echo "==> systemctl restart writebook"
+sudo systemctl restart writebook
+
+sleep 2
+state=$(systemctl is-active writebook || true)
+echo "==> writebook: $state"
+
+if [[ "$state" != "active" ]]; then
+  echo "!! service not active; recent logs:"
+  journalctl -u writebook -n 30 --no-pager
+  exit 1
+fi
+
+echo "==> last 5 log lines:"
+journalctl -u writebook -n 5 --no-pager
