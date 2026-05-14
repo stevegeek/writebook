@@ -159,10 +159,12 @@ module Books
     # published nor accessible to the current user. Without this, any signed-in
     # user could view any book by id.
     private def ensure_accessable : Marten::HTTP::Response?
-      book = Book.get(pk: params["id"]?)
-      return head :not_found if book.nil?
-      return head :not_found unless book.published || book.accessable?(current_user)
-      nil
+      ProfileLog.checkpoint("ensure_accessable") do
+        book = Book.get(pk: params["id"]?)
+        return head :not_found if book.nil?
+        return head :not_found unless book.published || book.accessable?(current_user)
+        nil
+      end
     end
 
     private def inject_extras : Nil
