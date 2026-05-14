@@ -240,20 +240,38 @@ module Books
 
     private def update_in_search_index : Nil
       return unless searchable?
-      # SQLite FTS5: even the content-bearing form is fine with DELETE+INSERT.
-      # Postgres: same pattern, simple and avoids tsvector update gotchas.
+      # UPDATE-then-INSERT-on-miss, mirroring Rails Leaf::Searchable
+      # (writebook-rails/app/models/leaf/searchable.rb). Saves one RTT
+      # per leaf save (UPDATE = 1 stmt vs the previous DELETE + INSERT = 2),
+      # which matters on managed Postgres where every round-trip is
+      # ~10ms over tailscale.
+      title_text = sanitize(title.to_s)
+      content_text = sanitize(searchable_content.to_s)
       Marten::DB::Connection.default.open do |db|
+        updated = if Searchable.postgres?
+                    db.exec(
+                      "UPDATE leaf_search_index SET title = $1, content = $2 WHERE rowid = $3",
+                      title_text, content_text, pk,
+                    )
+                  else
+                    db.exec(
+                      "UPDATE leaf_search_index SET title = ?, content = ? WHERE rowid = ?",
+                      title_text, content_text, pk,
+                    )
+                  end
+        # On miss (no existing row for this rowid yet — e.g. a leaf
+        # that didn't have indexable content at create-time but now
+        # does), fall back to INSERT.
+        next if updated.rows_affected > 0
         if Searchable.postgres?
-          db.exec("DELETE FROM leaf_search_index WHERE rowid = $1", pk)
           db.exec(
             "INSERT INTO leaf_search_index(rowid, title, content) VALUES ($1, $2, $3)",
-            pk, sanitize(title.to_s), sanitize(searchable_content.to_s),
+            pk, title_text, content_text,
           )
         else
-          db.exec("DELETE FROM leaf_search_index WHERE rowid = ?", pk)
           db.exec(
             "INSERT INTO leaf_search_index(rowid, title, content) VALUES (?, ?, ?)",
-            pk, sanitize(title.to_s), sanitize(searchable_content.to_s),
+            pk, title_text, content_text,
           )
         end
       end
