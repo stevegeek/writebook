@@ -73,39 +73,20 @@ module Books
         SQL
       end
 
-      results = [] of NamedTuple(leaf: Leaf, title_match: String?, content_match: String?)
+      rows = [] of {Int64, String?, String?}
       Marten::DB::Connection.default.open do |db|
         if book_id
           db.query sql, book_id, cleaned do |rs|
-            rs.each do
-              leaf_id = rs.read(Int64)
-              title_match = rs.read(String?)
-              content_match = rs.read(String?)
-              leaf = Leaf.get(pk: leaf_id)
-              results << {
-                leaf:          leaf.not_nil!,
-                title_match:   title_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
-                content_match: content_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
-              } if leaf
-            end
+            rs.each { rows << {rs.read(Int64), rs.read(String?), rs.read(String?)} }
           end
         else
           db.query sql, cleaned do |rs|
-            rs.each do
-              leaf_id = rs.read(Int64)
-              title_match = rs.read(String?)
-              content_match = rs.read(String?)
-              leaf = Leaf.get(pk: leaf_id)
-              results << {
-                leaf:          leaf.not_nil!,
-                title_match:   title_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
-                content_match: content_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
-              } if leaf
-            end
+            rs.each { rows << {rs.read(Int64), rs.read(String?), rs.read(String?)} }
           end
         end
       end
-      results
+
+      assemble_results(rows)
     end
 
     private def self.search_postgres(
@@ -149,23 +130,37 @@ module Books
         args = [tsq.as(::DB::Any)]
       end
 
-      results = empty_result
+      rows = [] of {Int64, String?, String?}
       Marten::DB::Connection.default.open do |db|
         db.query(sql, args: args) do |rs|
-          rs.each do
-            leaf_id = rs.read(Int64)
-            title_match = rs.read(String?)
-            content_match = rs.read(String?)
-            leaf = Leaf.get(pk: leaf_id)
-            results << {
-              leaf:          leaf.not_nil!,
-              title_match:   title_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
-              content_match: content_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
-            } if leaf
-          end
+          rs.each { rows << {rs.read(Int64), rs.read(String?), rs.read(String?)} }
         end
       end
-      results
+
+      assemble_results(rows)
+    end
+
+    # Bulk-load the matched Leaf rows with their leafables prefetched, then
+    # zip them back together with their highlight strings in result order.
+    # Collapses 2N per-result queries (Leaf.get per row + lazy leafable per
+    # template access) into 1 leaves SELECT + 1 leafable prefetch per type.
+    private def self.assemble_results(
+      rows : Array({Int64, String?, String?}),
+    ) : Array(NamedTuple(leaf: Leaf, title_match: String?, content_match: String?))
+      return [] of NamedTuple(leaf: Leaf, title_match: String?, content_match: String?) if rows.empty?
+
+      ids = rows.map(&.[0])
+      by_id = Leaf.filter(pk__in: ids).prefetch(:leafable).index_by(&.pk!)
+
+      rows.compact_map do |(leaf_id, title_match, content_match)|
+        leaf = by_id[leaf_id]?
+        next nil if leaf.nil?
+        {
+          leaf:          leaf,
+          title_match:   title_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
+          content_match: content_match.try { |s| ::Books::HtmlScrubber.sanitize_search_result(s) },
+        }
+      end
     end
 
     def reindex : Nil

@@ -59,7 +59,7 @@ module Books
         leaf:          target_leaf,
         page:          page,
         book:          target_book,
-        leaves:        active_leaves.prefetch(:leafable).order(:position_score, :id).to_a,
+        leaves:        sorted_active_leaves,
         previous_leaf: previous_leaf,
         next_leaf:     next_leaf,
         rendered_html: rendered,
@@ -216,7 +216,7 @@ module Books
       target_leaf = leaf
       return if target_leaf.nil?
       context[:book] = book!
-      context[:leaves] = active_leaves.prefetch(:leafable).order(:position_score, :id).to_a
+      context[:leaves] = sorted_active_leaves
       context[:editable] = book!.editable?(current_user)
       context[:edit_url] = Marten.routes.reverse("pages:edit", id: target_leaf.pk!)
       context[:show_url] = Marten.routes.reverse("pages:show", id: target_leaf.pk!)
